@@ -53,6 +53,12 @@ describe('App 殼層', () => {
     expect(overlay.value).toEqual({ kind: 'dialogue', scriptId: 'prologue' });
     expect(game.value.pendingBeat).toBe('prologue');
   });
+  it('粒子層 canvas#fx 只有一個，且不攔截點擊', () => {
+    const { container } = render(<App />);
+    const fx = container.querySelectorAll('canvas#fx');
+    expect(fx.length).toBe(1);
+    expect((fx[0] as HTMLElement).style.pointerEvents).toBe('none');
+  });
   it('橫放提示元素存在', () => {
     const { container } = render(<App />);
     expect(container.querySelector('.rotate-hint')).not.toBeNull();

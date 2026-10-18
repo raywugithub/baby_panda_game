@@ -60,3 +60,22 @@ test('家畫面：安裝提示展開或收起時，照顧按鈕都沒有被蓋�
   await expect(kitchen).toBeVisible();
   await kitchen.click({ trial: true });
 });
+
+test('抱抱後粒子層 canvas#fx 在 500ms 內畫出像素', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-webkit', '只在 iPhone WebKit 驗證粒子渲染');
+  await seedSave(page);
+  await page.goto('./');
+  await page.getByTestId('care-hug').click();
+  // 愛心粒子壽命約 60 幀；每次輪詢都讀取畫布上 alpha > 0 的像素數。
+  await expect.poll(
+    () => page.evaluate(() => {
+      const c = document.getElementById('fx') as HTMLCanvasElement | null;
+      if (!c || c.width === 0 || c.height === 0) return 0;
+      const data = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let i = 3; i < data.length; i += 4) if (data[i] > 0) n++;
+      return n;
+    }),
+    { timeout: 500, intervals: [50, 100, 100, 100, 100] },
+  ).toBeGreaterThan(0);
+});

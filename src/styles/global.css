@@ -67,6 +67,16 @@ button {
   }
 }
 
+/* 粒子層：鋪滿視窗、不攔截觸控；位於遊戲內容之上、覆蓋層（z 20）之下。 */
+.fx-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 15;
+}
+
 .app-shell {
   height: 100%;
   position: relative;

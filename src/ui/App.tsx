@@ -7,6 +7,7 @@ import { RewardToast } from './components/RewardToast';
 import { Onboarding } from './screens/Onboarding';
 import { initialStep, hasProgress, readMoveOutDismissed, OnbStep } from './onboarding';
 import { isIOS, isStandalone } from '../platform/pwa';
+import { fitParticleCanvas } from '../platform/particles';
 
 export function App() {
   const Screen = TAB_SCREENS[tab.value];
@@ -32,11 +33,23 @@ export function App() {
     }
   }, [pendingBeat, overlayOpen]);
 
+  // 粒子層：視窗縮放或轉向時同步畫布尺寸（canvas 固定鋪滿視窗，座標即為 client 座標）。
+  useEffect(() => {
+    fitParticleCanvas();
+    window.addEventListener('resize', fitParticleCanvas);
+    window.addEventListener('orientationchange', fitParticleCanvas);
+    return () => {
+      window.removeEventListener('resize', fitParticleCanvas);
+      window.removeEventListener('orientationchange', fitParticleCanvas);
+    };
+  }, []);
+
   const OverlayScreen = current ? OVERLAY_SCREENS[current.kind] : undefined;
 
   return (
     <>
       <div class="rotate-hint">把手機轉直，再來玩吧</div>
+      <canvas id="fx" class="fx-canvas" aria-hidden="true" style={{ pointerEvents: 'none' }} />
       <div class="app-shell">
         {saveFailed.value && <div class="banner" role="alert">目前無法存檔，請匯出備份</div>}
         {storageUnavailable.value && <div class="banner" role="alert">這裡無法保存進度，請匯出備份</div>}

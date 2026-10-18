@@ -34,15 +34,34 @@ function getCanvasCtx(): CanvasRenderingContext2D | null {
   return canvas ? canvas.getContext('2d') : null;
 }
 
+function devicePixelCap(): number {
+  return Math.min(typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, 2);
+}
+
+/** 依 CSS 尺寸與 DPR（上限 2）設定 backing store；尺寸沒變時不重設（重設會清空畫布）。 */
+export function sizeCanvas(canvas: HTMLCanvasElement): void {
+  const dpr = devicePixelCap();
+  const bw = Math.round(canvas.clientWidth * dpr);
+  const bh = Math.round(canvas.clientHeight * dpr);
+  if (canvas.width !== bw || canvas.height !== bh) {
+    canvas.width = bw;
+    canvas.height = bh;
+  }
+}
+
+/** 視窗縮放或轉向時呼叫：立即同步畫布尺寸（沒有 #fx 時不做事）。 */
+export function fitParticleCanvas(): void {
+  if (typeof document === 'undefined') return;
+  const canvas = document.getElementById('fx') as HTMLCanvasElement | null;
+  if (canvas) sizeCanvas(canvas);
+}
+
 function step(g: CanvasRenderingContext2D): void {
   const canvas = g.canvas;
-  const dpr = Math.min(typeof devicePixelRatio === 'number' ? devicePixelRatio : 1, 2);
+  const dpr = devicePixelCap();
   const w = canvas.clientWidth;
   const h = canvas.clientHeight;
-  if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-  }
+  sizeCanvas(canvas);
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   g.clearRect(0, 0, w, h);
   for (let i = live.length - 1; i >= 0; i--) {

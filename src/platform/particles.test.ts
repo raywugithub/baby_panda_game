@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { burst, particleCount, resetParticles, PARTICLE_CAP } from './particles';
+import { burst, particleCount, resetParticles, PARTICLE_CAP, sizeCanvas, fitParticleCanvas } from './particles';
 
 describe('particles', () => {
   beforeEach(() => resetParticles());
@@ -21,6 +21,28 @@ describe('particles', () => {
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
     burst('stars', 0, 0, 10);
     expect(particleCount()).toBe(0);
+    vi.unstubAllGlobals();
+  });
+  it('畫布 backing store = CSS 尺寸 × min(DPR, 2)', () => {
+    vi.stubGlobal('devicePixelRatio', 3);
+    const c = document.createElement('canvas');
+    Object.defineProperty(c, 'clientWidth', { value: 390, configurable: true });
+    Object.defineProperty(c, 'clientHeight', { value: 844, configurable: true });
+    sizeCanvas(c);
+    expect(c.width).toBe(780);
+    expect(c.height).toBe(1688);
+    vi.unstubAllGlobals();
+  });
+  it('視窗縮放後 fitParticleCanvas 同步 #fx 的尺寸', () => {
+    vi.stubGlobal('devicePixelRatio', 1);
+    const c = document.createElement('canvas');
+    c.id = 'fx';
+    document.body.appendChild(c);
+    Object.defineProperty(c, 'clientWidth', { value: 400, configurable: true });
+    Object.defineProperty(c, 'clientHeight', { value: 300, configurable: true });
+    fitParticleCanvas();
+    expect([c.width, c.height]).toEqual([400, 300]);
+    c.remove();
     vi.unstubAllGlobals();
   });
 });
