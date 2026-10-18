@@ -6,6 +6,7 @@ import { currentStage } from '../../core/growth';
 import { now } from '../../platform/clock';
 import { burst } from '../../platform/particles';
 import { game, commit, eventQueue, justOpenedAfterMs } from '../store';
+import { PandaTapZone } from '../components/Surprises';
 import { TopBar } from '../components/TopBar';
 import { Needs } from '../components/Needs';
 import { RoomView } from '../components/RoomView';
@@ -20,6 +21,12 @@ import { HugButton } from '../components/care/HugButton';
 import { Kitchen } from './Kitchen';
 import { REACTION_POSE } from '../../panda/reactions';
 import type { GameEvent } from '../../core/events';
+import { sfx } from '../../platform/audio';
+import { mulberry32, hash, chance } from '../../core/rng';
+import { localDate } from '../../core/time';
+import { shouldHiccup } from '../../core/care';
+import { diaryDreamOn } from '../../core/dream';
+import { hideFoodOnOpen, shyAfterHug, hiccupDream } from '../../core/surprises';
 
 export { idlePoseFor };
 
@@ -27,6 +34,16 @@ const AWAKE_MS = 30 * 60_000; // 契約 10.6：點醒睡覺中的熊貓後 30 �
 const CELEBRATE_MS = 2000; // C23：升階時慶祝姿勢約 2 秒
 const REACTION_MS = 2000; // 餵食反應姿勢持續 2 秒
 const KITCHEN_STAGE = 2;
+const BUSY_MS = 2000; // 戳戳忙碌姿勢
+const HIDE_FOOD_MS = 3000; // 偷吃被抓包姿勢
+const SHY_MS = 2000; // 抱抱害羞姿勢
+const SHAKE_MS = 1000; // 點項圈晃動姿勢
+const SNEEZE_MS = 1500; // 打噴嚏姿勢
+const SNEEZE_CHECK_MS = 120_000; // 打噴嚏檢查間隔：每 2 分鐘最多一次
+const DREAM_MS = 4000; // 夢話泡泡
+
+/** 短暫覆蓋的姿勢（小驚喜）；優先序在慶祝與餵食反應之後、待機之前。 */
+interface Transient { pose: PandaPose; ms: number }
 
 type Panel = 'feed' | 'bath' | 'play' | 'kitchen';
 const PANEL_LABEL: Record<Panel, string> = { feed: '餵食', bath: '洗澡', play: '玩耍', kitchen: '料理台' };
@@ -44,6 +61,44 @@ export function Home() {
   const [reaction, setReaction] = useState<{ pose: PandaPose } | null>(null);
   const [mailboxOpen, setMailboxOpen] = useState(false);
   const pandaBox = useRef<HTMLDivElement>(null);
+  const [transient, setTransient] = useState<Transient | null>(null);
+  const [dream, setDream] = useState<{ text: string } | null>(null);
+
+  function flash(pose: PandaPose, ms: number) {
+    setTransient({ pose, ms });
+  }
+
+  // 開啟家畫面：有食物時可能偷吃被抓包（每次開啟只判定一次）。
+  useEffect(() => {
+    const cur = game.value;
+    const t = now();
+    const hasFood = Object.entries(cur.inventory)
+      .some(([id, c]) => c > 0 && (id.startsWith('food-') || id.startsWith('recipe-')));
+    if (hideFoodOnOpen(mulberry32(hash(cur.seed, t, 'hide')), hasFood)) flash('hideFood', HIDE_FOOD_MS);
+  }, []);
+
+  // 每 2 分鐘最多判定一次打噴嚏；睡著時不打擾。
+  useEffect(() => {
+    const id = setInterval(() => {
+      const cur = game.value;
+      const t = now();
+      if (moodOf(cur, t, null) === 'sleeping') return;
+      if (chance(mulberry32(hash(cur.seed, t, 'sneeze')), 0.5)) flash('sneeze', SNEEZE_MS);
+    }, SNEEZE_CHECK_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (!transient) return;
+    const t = setTimeout(() => setTransient(null), transient.ms);
+    return () => clearTimeout(t);
+  }, [transient]);
+
+  useEffect(() => {
+    if (!dream) return;
+    const t = setTimeout(() => setDream(null), DREAM_MS);
+    return () => clearTimeout(t);
+  }, [dream]);
 
   // C23：升階事件到達時熊貓慶祝並噴星星；只讀取佇列，不消化。
   const freshStageUps = eventQueue.value.filter(e => e.type === 'stageUp' && !seenStageUps.has(e));
@@ -77,16 +132,48 @@ export function Home() {
     setPanel(cur => (cur === p ? null : p));
   }
 
-  function onPoke() {
+  /** 熊貓被點擊：先醒來（契約 10.6），再處理點項圈；戳戳計數由 PandaTapZone 負責。 */
+  function onPoke(area: 'body' | 'arms' | 'collar' | 'mouth') {
     const cur = game.value;
     const t = now();
     if (moodOf(cur, t, justOpenedAfterMs.value) === 'sleeping') {
       commit({ ...cur, awakeUntil: t + AWAKE_MS });
     }
     justOpenedAfterMs.value = null;
+    if (area === 'collar') {
+      sfx('jingle');
+      flash('shake', SHAKE_MS);
+    }
   }
 
-  const pose = (celebrating ? 'celebrate' : reaction ? reaction.pose : idlePoseFor(mood)) as PandaPose;
+  /** 抱抱後有 30% 機率害羞（以種子亂數決定）。 */
+  function onHug() {
+    const cur = game.value;
+    if (shyAfterHug(mulberry32(hash(cur.seed, now(), 'shy')))) flash('shy', SHY_MS);
+  }
+
+  /** 餵食後判定打嗝；月亮鈴鐺時夢話也寫進今天的日記（若今天已有一篇）。 */
+  function afterFeed() {
+    const cur = game.value;
+    const t = now();
+    if (!shouldHiccup(cur, t)) return;
+    const text = hiccupDream(cur.seed, t);
+    setDream({ text });
+    const today = cur.diary[0];
+    if (diaryDreamOn(cur) && today && today.date === localDate(t)) {
+      commit({
+        ...cur,
+        diary: [{ ...today, text: `${today.text}夢裡：${text}` }, ...cur.diary.slice(1)],
+      });
+    }
+  }
+
+  const transientPose = transient && mood !== 'sleeping' ? transient.pose : null;
+  const pose = (celebrating
+    ? 'celebrate'
+    : reaction
+      ? reaction.pose
+      : transientPose ?? idlePoseFor(mood)) as PandaPose;
   const { outfit, pendants } = s.equipped;
 
   return (
@@ -95,15 +182,18 @@ export function Home() {
       <TopBar onMailbox={() => setMailboxOpen(o => !o)} />
       <Needs />
 
-      <div class="home-panda" ref={pandaBox}>
-        <Panda
-          pose={pose}
-          stage={stage}
-          outfit={outfit}
-          pendants={pendants}
-          chainLinks={s.chainLinks}
-          onPokeArea={onPoke}
-        />
+      <div class={`home-panda${transientPose === 'shy' ? ' shy-ears' : ''}`} ref={pandaBox}>
+        <PandaTapZone onBusy={() => flash('busyBook', BUSY_MS)}>
+          <Panda
+            pose={pose}
+            stage={stage}
+            outfit={outfit}
+            pendants={pendants}
+            chainLinks={s.chainLinks}
+            onPokeArea={onPoke}
+          />
+        </PandaTapZone>
+        {dream ? <p class="dream-bubble" data-testid="dream-bubble">{dream.text}</p> : null}
         {mood === 'sleepy' ? <p class="sleepy-hint" data-testid="sleepy-hint">抱抱我、餵我吃點東西</p> : null}
       </div>
 
@@ -113,7 +203,7 @@ export function Home() {
         <button type="button" data-testid="care-feed" onClick={() => togglePanel('feed')}>🍙 餵食</button>
         <button type="button" data-testid="care-bath" onClick={() => togglePanel('bath')}>🫧 洗澡</button>
         <button type="button" data-testid="care-play" onClick={() => togglePanel('play')}>🧸 玩耍</button>
-        <HugButton />
+        <HugButton onHug={onHug} />
       </div>
       <div class="kitchen-row">
         <button
@@ -130,7 +220,13 @@ export function Home() {
         <section class="card care-panel" data-testid="care-panel">
           <h3>{PANEL_LABEL[panel]}</h3>
           {panel === 'feed' && mouth ? (
-            <FeedTray mouth={mouth} onFed={r => setReaction({ pose: REACTION_POSE[r] })} />
+            <FeedTray
+              mouth={mouth}
+              onFed={r => {
+                setReaction({ pose: REACTION_POSE[r] });
+                afterFeed();
+              }}
+            />
           ) : null}
           {panel === 'bath' ? <BathArea /> : null}
           {panel === 'play' ? <PlayMenu /> : null}

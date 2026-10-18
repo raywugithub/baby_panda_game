@@ -261,6 +261,17 @@ button {
   align-items: center;
 }
 
+.shy-ears [data-part^="ear"] circle {
+  fill: #f4a6b8;
+}
+
+.dream-bubble,
+.surprise-msg {
+  margin: 4px 0 0;
+  font-size: 14px;
+  text-align: center;
+}
+
 .home-panda svg {
   width: 60%;
   height: auto;

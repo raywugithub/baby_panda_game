@@ -7,7 +7,7 @@ import { burst } from '../../../platform/particles';
 const SHY_MS = 600;
 
 /** 抱抱：有效時加心情並噴愛心；無效（每小時上限）只播放害羞動畫，不改狀態。 */
-export function HugButton() {
+export function HugButton({ onHug }: { onHug?: () => void } = {}) {
   const [shy, setShy] = useState(false);
 
   useEffect(() => {
@@ -18,6 +18,7 @@ export function HugButton() {
 
   function onClick(e: MouseEvent) {
     const t = now();
+    onHug?.();
     if (!isEffective(game.value, 'hug', t)) {
       setShy(true);
       return;
