@@ -1,10 +1,11 @@
 import type { ComponentType } from 'preact';
 import type { Overlay, Tab } from '../nav';
 import { Placeholder } from './Placeholder';
+import { Home } from './Home';
 
 // 各計畫在此登記畫面元件；後續任務會替換下列對應值（例如 home 由 Task 22 替換）。
 export const TAB_SCREENS: Record<Tab, ComponentType> = {
-  home: Placeholder,
+  home: Home,
   map: Placeholder,
   closet: Placeholder,
   giftbox: Placeholder,
