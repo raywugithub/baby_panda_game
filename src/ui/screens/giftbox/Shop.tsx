@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import type { Rarity } from '../../../core/state';
 import type { ItemDef } from '../../../content/types';
 import { giftPool } from '../../../core/catalog';
-import { buy, priceOf } from '../../../core/shop';
+import { buy, isOnePerPlayer, priceOf } from '../../../core/shop';
 import { game, commit } from '../../store';
 
 const SECTIONS: { rarity: Rarity; title: string }[] = [
@@ -11,12 +11,10 @@ const SECTIONS: { rarity: Rarity; title: string }[] = [
   { rarity: 'rainbow', title: '彩虹' },
 ];
 
-/** 穿戴與牆地類只能擁有一件，已有即顯示「已有」；其餘（家具、食材）顯示持有數量。 */
-const SINGLE_CATEGORIES: ReadonlySet<ItemDef['category']> = new Set(['outfit', 'pendant', 'wall', 'floor']);
-
 function ownedLabel(item: ItemDef, count: number): string | null {
   if (count <= 0) return null;
-  return SINGLE_CATEGORIES.has(item.category) ? '已有' : `×${count}`;
+  // 穿戴與牆地類只能擁有一件，已有即顯示「已有」；其餘（家具、食材）顯示持有數量。
+  return isOnePerPlayer(item.category) ? '已有' : `×${count}`;
 }
 
 /** 棉花糖小舖：禮盒物品池中的物品，以棉花糖購買；沒有限時與輪替。 */

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buy, priceOf } from './shop';
+import { buy, isOnePerPlayer, priceOf } from './shop';
 import { createInitialState } from './state';
 
 const base = () => ({ ...createInitialState(1, 0), marshmallow: 300, inventory: {} as Record<string, number> });
@@ -24,5 +24,9 @@ describe('marshmallow shop', () => {
     const s = { ...base(), inventory: { 'outfit-head-bow': 1, 'furn-plant-pot': 1 } };
     expect(buy(s, 'outfit-head-bow')).toBeNull();
     expect(buy(s, 'furn-plant-pot')!.state.inventory['furn-plant-pot']).toBe(2);
+  });
+  it('isOnePerPlayer covers outfit, pendant, wall, floor only', () => {
+    expect(['outfit', 'pendant', 'wall', 'floor'].every(isOnePerPlayer)).toBe(true);
+    expect(['furniture', 'ingredient'].some(isOnePerPlayer)).toBe(false);
   });
 });

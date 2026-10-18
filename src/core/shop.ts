@@ -9,12 +9,17 @@ export function priceOf(rarity: Rarity): number {
   return PRICE[rarity];
 }
 
+/** 穿戴與牆地類每位玩家只能擁有一件。 */
+export function isOnePerPlayer(category: string): boolean {
+  return ONE_PER_PLAYER.has(category);
+}
+
 export function buy(s: GameState, itemId: string): Outcome | null {
   const item = getItem(itemId);
   if (!item.inGiftPool) return null;
   const price = priceOf(item.rarity);
   if (s.marshmallow < price) return null;
-  if (ONE_PER_PLAYER.has(item.category) && (s.inventory[itemId] ?? 0) > 0) return null;
+  if (isOnePerPlayer(item.category) && (s.inventory[itemId] ?? 0) > 0) return null;
   return {
     state: {
       ...s,
