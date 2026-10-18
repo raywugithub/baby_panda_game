@@ -1,5 +1,6 @@
 import type { GameState } from './state';
 import { isNewDay, localDate } from './time';
+import { diaryHandler } from './diary';
 
 export type DailyHandler = (s: GameState, today: string, now: number) => GameState;
 
@@ -15,7 +16,7 @@ const resetDaily: DailyHandler = (s) => {
   };
 };
 
-export const dailyHandlers: DailyHandler[] = [resetDaily];
+export const dailyHandlers: DailyHandler[] = [resetDaily, diaryHandler];
 
 export function runDaily(s: GameState, now: number): GameState {
   if (!isNewDay(s, now)) return s;

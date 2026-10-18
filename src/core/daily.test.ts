@@ -27,6 +27,13 @@ describe('runDaily', () => {
     expect(out.friends.juzi.chatsToday).toBe(0);
     expect(out.friends.gulu.chatsToday).toBe(0);
   });
+  it('跨日時寫入一篇日記（新的在最前）', () => {
+    const s = { ...fresh(), diary: [{ date: '2026-10-17', text: '舊的', sticker: null }] };
+    const out = runDaily(s, day(18));
+    expect(out.diary.length).toBe(2);
+    expect(out.diary[0].date).toBe('2026-10-18');
+    expect(out.diary[1].text).toBe('舊的');
+  });
   it('日期倒退不執行、不重複發放', () => {
     const s = { ...fresh(), lastDailyDate: '2026-10-18', daily: { revisitXpCount: 3, freeBoxUsed: true, visitor: null, visitorDone: false } };
     expect(runDaily(s, day(10)).daily.revisitXpCount).toBe(3);
