@@ -1,11 +1,16 @@
 import type { JSX } from 'preact';
-import type { Outfit, OutfitSlot } from '../core/state';
+import type { Outfit } from '../core/state';
+import { scaleForStage, shineTier, chainThickness } from '../core/growth';
 import { POSE_TABLE, type PandaPose, type PartMove } from './poses';
 import {
   PIVOTS, BodyShape, Strap, Tail, Leg, Arm, Ear, HeadShape, Eye, Cheek, Nose, Mouth, Nightcap,
 } from './parts';
+import { Halo, FurShine, ShineDefs } from './shine';
+import { Collar } from './collar';
+import { OutfitLayers } from './layers';
 
 export type { PandaPose } from './poses';
+export { ANCHORS } from './layers';
 
 export interface PandaProps {
   pose: PandaPose;
@@ -17,22 +22,12 @@ export interface PandaProps {
   onPokeArea?: (area: 'body' | 'arms' | 'collar' | 'mouth') => void;
 }
 
-/** 占位座標（viewBox 0 0 200 240）；Task 21 會依最終形狀修正。 */
-export const ANCHORS: Record<OutfitSlot | 'pendant', { x: number; y: number }> = {
-  head: { x: 100, y: 50 },
-  face: { x: 100, y: 70 },
-  body: { x: 100, y: 140 },
-  hand: { x: 150, y: 150 },
-  tail: { x: 170, y: 200 },
-  pendant: { x: 100, y: 110 },
-};
-
 type Area = 'body' | 'arms' | 'collar' | 'mouth';
 
 function areaOf(part: string | null): Area {
   if (part === 'armL' || part === 'armR') return 'arms';
   if (part === 'mouth') return 'mouth';
-  if (part === 'collar') return 'collar';
+  if (part === 'collar' || part === 'link' || part === 'link-count') return 'collar';
   return 'body';
 }
 
@@ -41,8 +36,17 @@ function moveTransform(m: PartMove | undefined, [px, py]: readonly [number, numb
   return `translate(${m?.dx ?? 0} ${m?.dy ?? 0}) rotate(${m?.rot ?? 0} ${px} ${py})`;
 }
 
-export function Panda({ pose, size = 240, onPokeArea }: PandaProps): JSX.Element {
+/** 嬰兒圓頭：階段 1 為 1.15，每升一階少 0.05，階段 4 起為 1。 */
+function babyHeadScale(stage: number): number {
+  return stage <= 4 ? Number((1.15 - 0.05 * (stage - 1)).toFixed(2)) : 1;
+}
+
+export function Panda({ pose, stage, outfit, pendants, chainLinks, size = 240, onPokeArea }: PandaProps): JSX.Element {
   const spec = POSE_TABLE[pose];
+  const tier = shineTier(stage);
+  const headS = babyHeadScale(stage);
+  const [hx, hy] = PIVOTS.head;
+  const rootScale = scaleForStage(stage);
   return (
     <svg
       viewBox="0 0 200 240"
@@ -57,26 +61,36 @@ export function Panda({ pose, size = 240, onPokeArea }: PandaProps): JSX.Element
         onPokeArea?.(areaOf(part));
       }}
     >
-      <g data-part="body" data-testid="panda-body" transform={moveTransform(spec.body, PIVOTS.body)}>
-        <Tail transform={moveTransform(spec.tail, PIVOTS.tail)} />
-        <Leg side="L" transform={moveTransform(spec.legL, PIVOTS.legL)} />
-        <Leg side="R" transform={moveTransform(spec.legR, PIVOTS.legR)} />
-        <BodyShape />
-        <Strap />
-        <Arm side="L" transform={moveTransform(spec.armL, PIVOTS.armL)} />
-        <Arm side="R" transform={moveTransform(spec.armR, PIVOTS.armR)} />
-        <g data-part="head" transform={moveTransform(spec.head, PIVOTS.head)}>
-          <Ear side="L" />
-          <Ear side="R" />
-          <HeadShape />
-          <Eye side="L" state={spec.eyes} />
-          <Eye side="R" state={spec.eyes} />
-          <Cheek side="L" on={spec.cheeks} />
-          <Cheek side="R" on={spec.cheeks} />
-          <Nose />
-          <Mouth kind={spec.mouth} />
-          {spec.nightcap ? <Nightcap /> : null}
+      <ShineDefs />
+      <g data-part="root" transform={`translate(100 240) scale(${rootScale}) translate(-100 -240)`}>
+        <g data-part="body" data-testid="panda-body" transform={moveTransform(spec.body, PIVOTS.body)}>
+          <Tail transform={moveTransform(spec.tail, PIVOTS.tail)} />
+          <Leg side="L" transform={moveTransform(spec.legL, PIVOTS.legL)} />
+          <Leg side="R" transform={moveTransform(spec.legR, PIVOTS.legR)} />
+          <BodyShape />
+          <FurShine tier={tier} cx={100} cy={165} rx={48} ry={50} />
+          <Strap />
+          <Arm side="L" transform={moveTransform(spec.armL, PIVOTS.armL)} />
+          <Arm side="R" transform={moveTransform(spec.armR, PIVOTS.armR)} />
+          <g data-part="head" transform={moveTransform(spec.head, PIVOTS.head)}>
+            <g transform={`translate(${hx} ${hy}) scale(${headS}) translate(${-hx} ${-hy})`}>
+              <Ear side="L" />
+              <Ear side="R" />
+              <HeadShape />
+              <FurShine tier={tier} cx={100} cy={96} rx={46} ry={40} />
+              <Eye side="L" state={spec.eyes} />
+              <Eye side="R" state={spec.eyes} />
+              <Cheek side="L" on={spec.cheeks} />
+              <Cheek side="R" on={spec.cheeks} />
+              <Nose />
+              <Mouth kind={spec.mouth} />
+              {spec.nightcap ? <Nightcap /> : null}
+            </g>
+          </g>
+          <Collar links={chainLinks} thickness={chainThickness(chainLinks)} />
         </g>
+        {tier >= 1 ? <Halo tier={tier} /> : null}
+        <OutfitLayers outfit={outfit} pendants={pendants} />
       </g>
     </svg>
   );
