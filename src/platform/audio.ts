@@ -20,7 +20,7 @@ let ctx: AudioContext | null = null;
 let enabled = true;
 let unlockRegistered = false;
 
-function ensureCtx(): AudioContext | null {
+export function ensureCtx(): AudioContext | null {
   if (!ctx) {
     try {
       ctx = new AudioContext();

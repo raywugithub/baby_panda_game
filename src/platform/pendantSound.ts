@@ -1,4 +1,5 @@
 // 墜飾叮噹音效：Web Audio 合成；任何失敗都靜默略過。呼叫端負責檢查音效設定。
+import { ensureCtx } from './audio';
 
 /** 每個墜飾音色 id 對應的音符頻率（Hz）。 */
 export const PENDANT_TONES: Record<string, number[]> = {
@@ -15,19 +16,6 @@ export const PENDANT_TONES: Record<string, number[]> = {
 const NOTE_SPACING_S = 0.15;
 const NOTE_GAIN = 0.15;
 const NOTE_LENGTH_S = 0.3;
-
-let ctx: AudioContext | null = null;
-
-function ensureCtx(): AudioContext | null {
-  if (!ctx) {
-    try {
-      ctx = new AudioContext();
-    } catch {
-      ctx = null;
-    }
-  }
-  return ctx;
-}
 
 export function playPendantSound(soundId: string): void {
   const notes = PENDANT_TONES[soundId];
