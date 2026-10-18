@@ -15,21 +15,6 @@ vi.mock('./storage', async (importOriginal) => {
   };
 });
 
-// 此執行環境的 localStorage 全域物件是殘缺的（Node 25 的 webstorage 沒有 clear 等方法），
-// 換成記憶體版 Storage，與 storage.test.ts 相同做法。
-{
-  const data = new Map<string, string>();
-  const shim = {
-    getItem: (k: string) => (data.has(k) ? data.get(k)! : null),
-    setItem: (k: string, v: string) => { data.set(k, String(v)); },
-    removeItem: (k: string) => { data.delete(k); },
-    clear: () => { data.clear(); },
-    key: (i: number) => [...data.keys()][i] ?? null,
-    get length() { return data.size; },
-  };
-  Object.defineProperty(globalThis, 'localStorage', { value: shim, configurable: true, writable: true });
-}
-
 afterEach(() => { vi.unstubAllGlobals(); });
 
 describe('PWA 設定', () => {

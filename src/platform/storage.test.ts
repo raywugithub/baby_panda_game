@@ -26,21 +26,6 @@ import {
   settleBackups,
 } from './storage';
 
-// 此執行環境的 localStorage 全域物件是殘缺的（Node 25 的 webstorage 沒有 setItem 等方法，
-// 且讀取時會印出警告），因此一律換成記憶體版 Storage，讓測試不依賴執行環境。
-{
-  const data = new Map<string, string>();
-  const shim = {
-    getItem: (k: string) => (data.has(k) ? data.get(k)! : null),
-    setItem: (k: string, v: string) => { data.set(k, String(v)); },
-    removeItem: (k: string) => { data.delete(k); },
-    clear: () => { data.clear(); },
-    key: (i: number) => [...data.keys()][i] ?? null,
-    get length() { return data.size; },
-  };
-  Object.defineProperty(globalThis, 'localStorage', { value: shim, configurable: true, writable: true });
-}
-
 const MIN = 60_000;
 const s = createInitialState(11, 0);
 
