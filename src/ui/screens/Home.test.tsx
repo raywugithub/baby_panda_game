@@ -90,6 +90,22 @@ describe('Home 互動細節', () => {
     expect(game.value.awakeUntil).toBe(clock.t + 30 * 60_000);
     expect(document.querySelector('svg[data-pose]')!.getAttribute('data-pose')).toBe('dance');
   });
+  it('熊貓區先醒來再計數：睡覺中連戳 8 下仍觸發「假裝很忙」，且只寫入一次狀態', () => {
+    clock.t = new Date(2026, 9, 18, 23, 30).getTime();
+    render(<Home />);
+    const zone = screen.getByTestId('panda-tap-zone');
+    const awakeUntil = clock.t + 30 * 60_000;
+    fireEvent.pointerDown(zone, { clientX: 1, clientY: 1, pointerId: 1 });
+    expect(game.value.awakeUntil).toBe(awakeUntil);
+    expect(game.value.pokeLog).toEqual([clock.t]);
+    for (let i = 1; i < 8; i++) {
+      clock.t += 100;
+      fireEvent.pointerDown(zone, { clientX: 1, clientY: 1, pointerId: 1 });
+    }
+    expect(game.value.pokeLog).toEqual([]);
+    expect(screen.getByText(/假裝很忙/)).toBeTruthy();
+    expect(game.value.awakeUntil).toBe(awakeUntil);
+  });
   it('升階事件讓熊貓進入慶祝姿勢，且不消化佇列', async () => {
     render(<Home />);
     expect(document.querySelector('svg[data-pose]')!.getAttribute('data-pose')).toBe('dance');

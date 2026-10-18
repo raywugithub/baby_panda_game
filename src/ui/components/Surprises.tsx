@@ -1,38 +1,21 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect, useState } from 'preact/hooks';
-import { game, commit } from '../store';
-import { recordPoke } from '../../core/surprises';
-import { now } from '../../platform/clock';
-
-const BUSY_MS = 2000;
 
 interface Props {
-  onBusy?: () => void;
+  /** 戳戳忙碌狀態（由 Home 決定；Home 的 transient 姿勢為 busyBook 時為真）。 */
+  busy?: boolean;
+  /** 熊貓區的唯一 pointerdown 處理函式，由 Home 提供（先醒來、再計數）。 */
+  onPointerDown?: (e: PointerEvent) => void;
   children?: ComponentChildren;
 }
 
-/** 包住熊貓的戳戳區：3 秒內戳 8 下顯示「假裝很忙」，並通知呼叫端切換姿勢。 */
-export function PandaTapZone({ onBusy, children }: Props) {
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    if (!busy) return;
-    const t = setTimeout(() => setBusy(false), BUSY_MS);
-    return () => clearTimeout(t);
-  }, [busy]);
-
-  function onPointerDown() {
-    const cur = game.value;
-    const r = recordPoke(cur.pokeLog, now());
-    commit({ ...cur, pokeLog: r.pokeLog });
-    if (r.trigger) {
-      setBusy(true);
-      onBusy?.();
-    }
-  }
-
+/** 包住熊貓的戳戳區：只負責轉發 pointerdown 與顯示「假裝很忙」，不做計數。 */
+export function PandaTapZone({ busy = false, onPointerDown, children }: Props) {
   return (
-    <div class="panda-tap-zone" data-testid="panda-tap-zone" onPointerDown={onPointerDown}>
+    <div
+      class="panda-tap-zone"
+      data-testid="panda-tap-zone"
+      onPointerDown={(e) => onPointerDown?.(e as unknown as PointerEvent)}
+    >
       {children}
       {busy ? <p class="surprise-msg" role="status">假裝很忙，拿出一本書擋住臉</p> : null}
     </div>

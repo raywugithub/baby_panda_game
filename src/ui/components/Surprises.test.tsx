@@ -1,18 +1,20 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, screen } from '@testing-library/preact';
-import { createInitialState } from '../../core/state';
-import { game } from '../store';
 import { PandaTapZone } from './Surprises';
 
-beforeEach(() => { game.value = createInitialState(5, 0); });
-
-describe('戳戳驚喜', () => {
-  it('連續戳 8 下顯示「假裝很忙」並通知呼叫端', () => {
-    const onBusy = vi.fn();
-    render(<PandaTapZone onBusy={onBusy} />);
-    const zone = screen.getByTestId('panda-tap-zone');
-    for (let i = 0; i < 8; i++) fireEvent.pointerDown(zone, { clientX: 1, clientY: 1, pointerId: 1 });
+describe('戳戳區（僅呈現與轉發）', () => {
+  it('busy 為真時顯示「假裝很忙」', () => {
+    render(<PandaTapZone busy />);
     expect(screen.getByText(/假裝很忙/)).toBeTruthy();
-    expect(onBusy).toHaveBeenCalledTimes(1);
+  });
+  it('busy 為假時不顯示訊息', () => {
+    render(<PandaTapZone busy={false} />);
+    expect(screen.queryByText(/假裝很忙/)).toBeNull();
+  });
+  it('pointerdown 轉發給 onPointerDown，且只呼叫一次', () => {
+    const onPointerDown = vi.fn();
+    render(<PandaTapZone onPointerDown={onPointerDown} />);
+    fireEvent.pointerDown(screen.getByTestId('panda-tap-zone'), { clientX: 1, clientY: 1, pointerId: 1 });
+    expect(onPointerDown).toHaveBeenCalledTimes(1);
   });
 });

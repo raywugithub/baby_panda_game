@@ -26,7 +26,7 @@ import { mulberry32, hash, chance } from '../../core/rng';
 import { localDate } from '../../core/time';
 import { shouldHiccup } from '../../core/care';
 import { diaryDreamOn } from '../../core/dream';
-import { hideFoodOnOpen, shyAfterHug, hiccupDream } from '../../core/surprises';
+import { hideFoodOnOpen, shyAfterHug, hiccupDream, recordPoke } from '../../core/surprises';
 
 export { idlePoseFor };
 
@@ -132,14 +132,25 @@ export function Home() {
     setPanel(cur => (cur === p ? null : p));
   }
 
-  /** 熊貓被點擊：先醒來（契約 10.6），再處理點項圈；戳戳計數由 PandaTapZone 負責。 */
-  function onPoke(area: 'body' | 'arms' | 'collar' | 'mouth') {
+  /**
+   * 熊貓區唯一的 pointerdown（C15）：先醒來（契約 10.6），再計算戳戳；
+   * 醒來與計數合併成一次 commit，避免後寫入覆蓋 awakeUntil。
+   */
+  function onPandaPointerDown() {
     const cur = game.value;
     const t = now();
+    let next = cur;
     if (moodOf(cur, t, justOpenedAfterMs.value) === 'sleeping') {
-      commit({ ...cur, awakeUntil: t + AWAKE_MS });
+      next = { ...cur, awakeUntil: t + AWAKE_MS };
     }
     justOpenedAfterMs.value = null;
+    const r = recordPoke(next.pokeLog, t);
+    commit({ ...next, pokeLog: r.pokeLog });
+    if (r.trigger) flash('busyBook', BUSY_MS);
+  }
+
+  /** Panda 內部部件的點擊：只處理點項圈（醒來與計數已由 onPandaPointerDown 負責）。 */
+  function onPandaArea(area: 'body' | 'arms' | 'collar' | 'mouth') {
     if (area === 'collar') {
       sfx('jingle');
       flash('shake', SHAKE_MS);
@@ -183,14 +194,14 @@ export function Home() {
       <Needs />
 
       <div class={`home-panda${transientPose === 'shy' ? ' shy-ears' : ''}`} ref={pandaBox}>
-        <PandaTapZone onBusy={() => flash('busyBook', BUSY_MS)}>
+        <PandaTapZone busy={transientPose === 'busyBook'} onPointerDown={onPandaPointerDown}>
           <Panda
             pose={pose}
             stage={stage}
             outfit={outfit}
             pendants={pendants}
             chainLinks={s.chainLinks}
-            onPokeArea={onPoke}
+            onPokeArea={onPandaArea}
           />
         </PandaTapZone>
         {dream ? <p class="dream-bubble" data-testid="dream-bubble">{dream.text}</p> : null}
