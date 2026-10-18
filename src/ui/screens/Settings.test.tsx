@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/preact';
+import { render, screen, fireEvent, waitFor } from '@testing-library/preact';
 import { createInitialState } from '../../core/state';
 import { game } from '../store';
 import { Settings } from './Settings';
@@ -22,5 +22,17 @@ describe('Settings', () => {
     render(<Settings />);
     fireEvent.click(screen.getByRole('button', { name: '匯入存檔碼' }));
     expect(screen.getByText('會取代目前的熊貓，要繼續嗎？')).toBeTruthy();
+  });
+  it('檔案讀取失敗時顯示看不懂的錯誤，不產生未處理的 rejection', async () => {
+    render(<Settings />);
+    fireEvent.click(screen.getByRole('button', { name: '匯入存檔碼' }));
+    fireEvent.click(screen.getByRole('button', { name: '繼續' }));
+    const input = screen.getByLabelText('選擇 .panda 檔案') as HTMLInputElement;
+    const file = new File(['x'], 'a.panda', { type: 'application/json' });
+    Object.defineProperty(file, 'text', { value: () => Promise.reject(new Error('read failed')) });
+    Object.defineProperty(input, 'files', { value: [file] });
+    fireEvent.change(input);
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('這個存檔碼看不懂'));
+    expect(screen.getByLabelText('選擇 .panda 檔案')).toBeTruthy();
   });
 });

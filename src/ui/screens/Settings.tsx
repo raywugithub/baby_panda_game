@@ -100,7 +100,13 @@ export function Settings(_props: { overlay?: Overlay } = {}) {
 
   async function onFileChosen(file: File | undefined) {
     if (!file) return;
-    const text = await file.text();
+    let text: string;
+    try {
+      text = await file.text();
+    } catch {
+      setImportError('這個存檔碼看不懂');
+      return;
+    }
     await applyImport(() => importFileText(text, game.value, now()));
   }
 
