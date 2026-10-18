@@ -2,6 +2,7 @@ import type { ComponentType } from 'preact';
 import type { Overlay, Tab } from '../nav';
 import { Placeholder } from './Placeholder';
 import { Home } from './Home';
+import { DialogueOverlay } from '../components/Dialogue';
 
 // 各計畫在此登記畫面元件；後續任務會替換下列對應值（例如 home 由 Task 22 替換）。
 export const TAB_SCREENS: Record<Tab, ComponentType> = {
@@ -12,9 +13,9 @@ export const TAB_SCREENS: Record<Tab, ComponentType> = {
   album: Placeholder,
 };
 
-// 後續任務會替換 settings、dialogue、welcome 的對應值。
+// 後續任務會替換 settings、welcome 的對應值。
 export const OVERLAY_SCREENS: Partial<Record<Overlay['kind'], ComponentType<{ overlay: Overlay }>>> = {
   settings: Placeholder,
-  dialogue: Placeholder,
+  dialogue: DialogueOverlay,
   welcome: Placeholder,
 };

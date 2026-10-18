@@ -42,10 +42,10 @@ describe('App 殼層', () => {
     expect(screen.getByTestId('tab-home').getAttribute('aria-current')).toBeNull();
   });
   it('有待播劇情且沒有覆蓋層時自動開啟對話', () => {
-    commit({ ...createInitialState(1, 0), pendingBeat: 'ch1' });
+    commit({ ...createInitialState(1, 0), pendingBeat: 'prologue' });
     render(<App />);
-    expect(overlay.value).toEqual({ kind: 'dialogue', scriptId: 'ch1' });
-    expect(game.value.pendingBeat).toBe('ch1');
+    expect(overlay.value).toEqual({ kind: 'dialogue', scriptId: 'prologue' });
+    expect(game.value.pendingBeat).toBe('prologue');
   });
   it('橫放提示元素存在', () => {
     const { container } = render(<App />);

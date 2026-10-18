@@ -3,6 +3,7 @@ import { game, dismissOverlay, restored } from './store';
 import { tab, overlay, goTab, openOverlay, TAB_ORDER } from './nav';
 import { TAB_SCREENS, OVERLAY_SCREENS } from './screens/registry';
 import { saveFailed, sizeWarning, storageUnavailable } from '../platform/storage';
+import { RewardToast } from './components/RewardToast';
 
 export function App() {
   const Screen = TAB_SCREENS[tab.value];
@@ -32,6 +33,8 @@ export function App() {
             <button type="button" onClick={() => { restored.value = false; }}>知道了</button>
           </div>
         )}
+
+        <RewardToast />
 
         <main class="screen">
           <Screen />
