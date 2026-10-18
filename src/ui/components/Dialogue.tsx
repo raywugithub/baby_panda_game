@@ -55,7 +55,7 @@ export function Dialogue({ scriptId, onDone }: DialogueProps) {
           outfit={s.equipped.outfit}
           pendants={s.equipped.pendants}
           chainLinks={s.chainLinks}
-          size={140}
+          size={180}
         />
       </div>
       <div class="dialogue-box" data-testid="dialogue-box" data-side={side} onClick={() => advance()}>

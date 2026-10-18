@@ -40,3 +40,12 @@ describe('Dialogue', () => {
     expect(done).toBe(true);
   });
 });
+
+describe('Dialogue 熊貓尺寸', () => {
+  it('插圖高度至少 160px 並置中', () => {
+    const { container } = render(<Dialogue scriptId="prologue" />);
+    const svg = container.querySelector('.dialogue-panda svg') as SVGElement | null;
+    expect(svg).toBeTruthy();
+    expect(Number(svg!.getAttribute('height'))).toBeGreaterThanOrEqual(160);
+  });
+});
