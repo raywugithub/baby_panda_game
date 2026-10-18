@@ -6,8 +6,10 @@ test('重新整理後進度仍在', async ({ page }) => {
   await page.goto('./');
   await page.getByTestId('care-hug').click();
   await page.waitForTimeout(1200); // 規格：狀態改變後 1 秒寫入
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('panda.save')!).needs.mood)).toBe(95);
   const before = await page.evaluate(() => localStorage.getItem('panda.save'));
   await page.reload();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('panda.save')!).needs.mood)).toBe(95);
   expect(await page.evaluate(() => localStorage.getItem('panda.save'))).toBe(before);
 });
 
