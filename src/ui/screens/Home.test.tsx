@@ -133,3 +133,11 @@ describe('Home 互動細節', () => {
     expect(screen.getByText('嗨，我是橘子')).toBeTruthy();
   });
 });
+
+describe('Home 版面', () => {
+  it('熊貓位於房間之內（房間是背景，熊貓站在地板上）', () => {
+    render(<Home />);
+    const room = document.querySelector('.room')!;
+    expect(room.querySelector('.home-panda svg[data-pose]')).not.toBeNull();
+  });
+});

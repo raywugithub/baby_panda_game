@@ -1,4 +1,4 @@
-import type { JSX } from 'preact';
+import type { ComponentChildren, JSX } from 'preact';
 import { game } from '../store';
 import { ITEM_BY_ID } from '../../content/items';
 import { ITEM_ART } from '../../art/items';
@@ -47,7 +47,8 @@ function PlacedView({ item }: { item: PlacedItem }): JSX.Element {
   );
 }
 
-export function RoomView(): JSX.Element {
+/** 房間背景（牆與地板）；children 疊在房間內，例如站在地板上的熊貓。 */
+export function RoomView({ children }: { children?: ComponentChildren }): JSX.Element {
   const room = game.value.rooms.living;
   const wall = WALL_COLOR[room.wall] ?? 'var(--fur-shade)';
   const floor = FLOOR_COLOR[room.floor] ?? 'var(--fur)';
@@ -56,6 +57,7 @@ export function RoomView(): JSX.Element {
       <div class="room-wall" style={{ background: wall }} />
       <div class="room-floor" style={{ background: floor }} />
       {room.placed.map(p => <PlacedView key={p.uid} item={p} />)}
+      {children}
     </div>
   );
 }

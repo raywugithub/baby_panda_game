@@ -209,25 +209,26 @@ export function Home({ tutorialHint }: HomeProps = {}) {
     <div class="home">
       <UpdateBanner />
       <TopBar onMailbox={() => setMailboxOpen(o => !o)} />
+      <InstallHint />
       <Needs />
 
-      <div class={`home-panda${transientPose === 'shy' ? ' shy-ears' : ''}`} ref={pandaBox}>
-        <PandaTapZone busy={transientPose === 'busyBook'} onPointerDown={onPandaPointerDown}>
-          <Panda
-            pose={pose}
-            stage={stage}
-            outfit={outfit}
-            pendants={pendants}
-            chainLinks={s.chainLinks}
-            onPokeArea={onPandaArea}
-          />
-        </PandaTapZone>
-        {dream ? <p class="dream-bubble" data-testid="dream-bubble">{dream.text}</p> : null}
-        {tutorialHint ? <p class="tutorial-hint" data-testid="tutorial-hint">{tutorialHint}</p> : null}
-        {mood === 'sleepy' ? <p class="sleepy-hint" data-testid="sleepy-hint">抱抱我、餵我吃點東西</p> : null}
-      </div>
-
-      <RoomView />
+      <RoomView>
+        <div class={`home-panda${transientPose === 'shy' ? ' shy-ears' : ''}`} ref={pandaBox}>
+          <PandaTapZone busy={transientPose === 'busyBook'} onPointerDown={onPandaPointerDown}>
+            <Panda
+              pose={pose}
+              stage={stage}
+              outfit={outfit}
+              pendants={pendants}
+              chainLinks={s.chainLinks}
+              onPokeArea={onPandaArea}
+            />
+          </PandaTapZone>
+        </div>
+      </RoomView>
+      {dream ? <p class="dream-bubble" data-testid="dream-bubble">{dream.text}</p> : null}
+      {tutorialHint ? <p class="tutorial-hint" data-testid="tutorial-hint">{tutorialHint}</p> : null}
+      {mood === 'sleepy' ? <p class="sleepy-hint" data-testid="sleepy-hint">抱抱我、餵我吃點東西</p> : null}
 
       <div class="care-row">
         <button type="button" data-testid="care-feed" onClick={() => togglePanel('feed')}>🍙 餵食</button>
@@ -266,7 +267,6 @@ export function Home({ tutorialHint }: HomeProps = {}) {
 
       <DiaryPanel />
       {mailboxOpen ? <Mailbox onClose={() => setMailboxOpen(false)} /> : null}
-      <InstallHint />
     </div>
   );
 }

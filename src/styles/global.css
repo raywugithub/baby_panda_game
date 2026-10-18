@@ -255,28 +255,52 @@ button {
   text-align: right;
 }
 
+/* 熊貓站在房間地板上：房間是背景，熊貓疊在房間內底部、約為房間寬度的 60%。 */
 .home-panda {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
+  padding-bottom: 4px;
+  pointer-events: none;
+}
+
+.home-panda .panda-tap-zone {
+  position: relative;
+  width: 60%;
+  pointer-events: auto;
+}
+
+.home-panda svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 戳戳「假裝很忙」浮在熊貓頭上方，不撐開房間。 */
+.home-panda .surprise-msg {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--paper);
+  white-space: nowrap;
+  font-size: 13px;
 }
 
 .shy-ears [data-part^="ear"] circle {
   fill: #f4a6b8;
 }
 
-.dream-bubble,
-.surprise-msg {
+.dream-bubble {
   margin: 4px 0 0;
   font-size: 14px;
   text-align: center;
-}
-
-.home-panda svg {
-  width: 60%;
-  height: auto;
-  max-width: 280px;
-  display: block;
 }
 
 .sleepy-hint {
@@ -379,12 +403,8 @@ button {
   align-items: stretch;
 }
 
+/* 安裝提示與備份提醒都在版面流程中（不蓋住照顧按鈕）。 */
 .install-hint {
-  position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: calc(72px + env(safe-area-inset-bottom));
-  z-index: 5;
   display: flex;
   gap: 8px;
   align-items: center;
@@ -401,10 +421,7 @@ button {
 }
 
 .install-fab {
-  position: fixed;
-  right: 16px;
-  bottom: calc(72px + env(safe-area-inset-bottom));
-  z-index: 5;
+  align-self: flex-end;
   min-width: 44px;
   min-height: 44px;
 }
@@ -521,13 +538,8 @@ button {
   .welcome-run-in { animation: none; }
 }
 
-/* 備份提醒：位於安裝提示上方，觸控區 ≥ 44px */
+/* 備份提醒：版面流程中的一列，觸控區 ≥ 44px */
 .backup-reminder {
-  position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: calc(132px + env(safe-area-inset-bottom));
-  z-index: 5;
   min-height: 44px;
   border: 0;
   border-radius: 12px;

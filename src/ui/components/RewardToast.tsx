@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { eventQueue } from '../store';
 import type { GameEvent } from '../../core/events';
 import { RECIPES } from '../../content/recipes';
@@ -40,11 +40,13 @@ interface Toast { id: number; text: string }
 
 let nextId = 0;
 
-/** 消化獎勵類事件並以提示條顯示 2.5 秒；其餘事件留在佇列給其他畫面。 */
+/**
+ * 消化獎勵類事件並排隊顯示：同一時間只有一則，每則 2.5 秒後換下一則，
+ * 因此提示不會互相疊住，也不會蓋到指標。其餘事件留在佇列給其他畫面。
+ */
 export function RewardToast() {
   const queue = eventQueue.value;
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const [pending, setPending] = useState<Toast[]>([]);
 
   useEffect(() => {
     // Read the live queue here, not the render-time snapshot, so events pushed
@@ -55,23 +57,23 @@ export function RewardToast() {
     eventQueue.value = current.filter((e) => !isToastable(e));
     const fresh: Toast[] = [];
     for (const e of mine) for (const text of textsOf(e)) fresh.push({ id: nextId++, text });
-    if (fresh.length === 0) return;
-    setToasts((prev) => [...prev, ...fresh]);
-    for (const t of fresh) {
-      timers.current.push(setTimeout(() => {
-        setToasts((prev) => prev.filter((x) => x.id !== t.id));
-      }, SHOW_MS));
-    }
+    if (fresh.length > 0) setPending((prev) => [...prev, ...fresh]);
   }, [queue]);
 
-  useEffect(() => () => {
-    for (const t of timers.current) clearTimeout(t);
-  }, []);
+  const head = pending[0];
+  const headId = head?.id;
+  useEffect(() => {
+    if (headId === undefined) return;
+    const t = setTimeout(() => {
+      setPending((prev) => prev.filter((x) => x.id !== headId));
+    }, SHOW_MS);
+    return () => clearTimeout(t);
+  }, [headId]);
 
-  if (toasts.length === 0) return null;
+  if (!head) return null;
   return (
     <div class="reward-toast" role="status">
-      {toasts.map((t) => <p key={t.id} class="reward-toast-item">{t.text}</p>)}
+      <p key={head.id} class="reward-toast-item">{head.text}</p>
     </div>
   );
 }

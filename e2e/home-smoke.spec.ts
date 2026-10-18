@@ -32,3 +32,21 @@ test('版面沒有水平捲動', async ({ page }) => {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   expect(overflow).toBe(false);
 });
+
+test('家畫面：安裝提示展開或收起時，照顧按鈕都沒有被蓋住', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-webkit', '只在 iPhone WebKit 驗證版面遮擋');
+  await seedSave(page);
+  await page.goto('./');
+  const careButtons = ['care-hug', 'care-feed', 'care-bath', 'care-play'];
+  await expect(page.getByRole('button', { name: '收起' })).toBeVisible();
+  for (const id of careButtons) {
+    await expect(page.getByTestId(id)).toBeVisible();
+    await page.getByTestId(id).click({ trial: true });
+  }
+  await page.getByRole('button', { name: '收起' }).click();
+  await expect(page.getByRole('button', { name: '安裝提示' })).toBeVisible();
+  for (const id of careButtons) {
+    await expect(page.getByTestId(id)).toBeVisible();
+    await page.getByTestId(id).click({ trial: true });
+  }
+});
