@@ -24,8 +24,8 @@ describe('熊貓姿勢', () => {
     const a = render(<Panda pose="armsOut" stage={1} outfit={{}} pendants={[]} chainLinks={0} />);
     const armLTransform = a.container.querySelector('[data-part="armL"]')!.getAttribute('transform');
     const armRTransform = a.container.querySelector('[data-part="armR"]')!.getAttribute('transform');
-    expect(armLTransform).toContain('rotate(-75');
-    expect(armRTransform).toContain('rotate(75');
+    expect(armLTransform).toContain('rotate(-120');
+    expect(armRTransform).toContain('rotate(120');
     const b = render(<Panda pose="sleep" stage={1} outfit={{}} pendants={[]} chainLinks={0} />);
     expect(b.container.querySelector('[data-part="nightcap"]')).not.toBeNull();
   });

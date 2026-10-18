@@ -195,7 +195,7 @@ export function Mouth({ kind }: { kind: 'smile' | 'open' | 'sour' | 'chew' | 'ya
       shape = <path d="M -6 0 L 6 0" fill="none" stroke="var(--ink)" stroke-width={2.5} stroke-linecap="round" />;
       break;
     case 'pout':
-      shape = <path d="M -5 0 Q 0 -3 5 0" fill="none" stroke="var(--ink)" stroke-width={2.5} stroke-linecap="round" />;
+      shape = <ellipse cx={0} cy={2} rx={3} ry={2.2} fill="var(--ink)" />;
       break;
     default:
       shape = <path d="M -8 0 Q 0 6 8 0" fill="none" stroke="var(--ink)" stroke-width={2.5} stroke-linecap="round" />;
