@@ -8,6 +8,10 @@ import {
   PendantShell, PendantMushroom, PendantSnowflake, PendantCloud, PendantStar, PendantMoonBell, PendantHeart,
 } from './pendants';
 import {
+  BambooHat, BowHeadband, KnitCap, StarCrown, RoundGlasses, SleepMask, BlushPatch, TigerPaint,
+  Scarf, Vest, Raincoat, Hanfu, BambooFan, Balloon, Umbrella, BambooFlute, TailBow, Ribbon, FluffyTail, StarTail,
+} from './outfits';
+import {
   BambooShelf, PlantPot, Lantern, ToyBox, Rug, BambooChair, Lamp, Cabinet, SnackBasket, BambooFence,
   MushroomStool, FlowerVase, Sofa, Bed, Swing, ReadingNook, Bookshelf, Clock, Hammock, Beanbag, Fountain,
 } from './furniture';
@@ -58,4 +62,24 @@ export const ITEM_ART: Record<string, ComponentType<{ size: number }>> = {
   'pendant-star': PendantStar,
   'pendant-moon-bell': PendantMoonBell,
   'pendant-heart': PendantHeart,
+  'outfit-head-bamboo-hat': BambooHat,
+  'outfit-head-bow': BowHeadband,
+  'outfit-head-cap': KnitCap,
+  'outfit-head-crown': StarCrown,
+  'outfit-face-glasses': RoundGlasses,
+  'outfit-face-sleepmask': SleepMask,
+  'outfit-face-blush': BlushPatch,
+  'outfit-face-tiger': TigerPaint,
+  'outfit-body-scarf': Scarf,
+  'outfit-body-vest': Vest,
+  'outfit-body-raincoat': Raincoat,
+  'outfit-body-hanfu': Hanfu,
+  'outfit-hand-fan': BambooFan,
+  'outfit-hand-balloon': Balloon,
+  'outfit-hand-umbrella': Umbrella,
+  'outfit-hand-flute': BambooFlute,
+  'outfit-tail-bow': TailBow,
+  'outfit-tail-ribbon': Ribbon,
+  'outfit-tail-fluffy': FluffyTail,
+  'outfit-tail-star': StarTail,
 };
