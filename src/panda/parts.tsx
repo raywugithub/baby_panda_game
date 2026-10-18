@@ -78,7 +78,10 @@ export function HeadShape(): JSX.Element {
   return <ellipse cx={100} cy={96} rx={46} ry={40} fill="var(--fur)" />;
 }
 
-const STAR = '0,-7 1.7,-2.3 6.7,-2.2 2.7,0.9 4.1,5.7 0,2.6 -4.1,5.7 -2.7,0.9 -6.7,-2.2 -1.7,-2.3';
+// 黑色淚滴眼圈：尖端朝上、圓底朝下；由 Eye 依左右旋轉，使尖端朝臉的外側。
+const EYE_PATCH = 'M 0 -15 C 6 -8 13 -2 13 4 A 13 13 0 0 1 -13 4 C -13 -2 -6 -8 0 -15 Z';
+
+const STAR ='0,-7 1.7,-2.3 6.7,-2.2 2.7,0.9 4.1,5.7 0,2.6 -4.1,5.7 -2.7,0.9 -6.7,-2.2 -1.7,-2.3';
 
 /** 黑色淚滴眼圈加上眼睛；狀態由姿勢決定。 */
 export function Eye({ side, state }: { side: Side; state: 'open' | 'closed' | 'stars' | 'stare' | 'squint' }): JSX.Element {
@@ -112,7 +115,7 @@ export function Eye({ side, state }: { side: Side; state: 'open' | 'closed' | 's
   }
   return (
     <g data-part={`eye${side}`} transform={`translate(${x} 92)`}>
-      <ellipse rx={13} ry={15} fill="var(--ink)" />
+      <path d={EYE_PATCH} fill="var(--ink)" transform={`rotate(${side === 'L' ? 30 : -30})`} />
       {content}
     </g>
   );
