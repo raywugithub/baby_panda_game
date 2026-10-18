@@ -1029,3 +1029,80 @@ button {
   text-align: center;
   color: var(--amber);
 }
+
+.giftbox-shop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.giftbox-shop-header {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.giftbox-shop-message {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+.giftbox-shop-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.giftbox-shop-title {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.giftbox-shop-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.giftbox-shop-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+}
+
+.giftbox-shop-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.giftbox-shop-owned {
+  font-size: 13px;
+  color: var(--amber);
+}
+
+.giftbox-shop-price {
+  flex: none;
+  font-weight: 700;
+  color: #8A5A24;
+}

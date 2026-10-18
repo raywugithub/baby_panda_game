@@ -5,6 +5,7 @@ import { mulberry32 } from '../../core/rng';
 import { randomSeed } from '../../platform/clock';
 import { game, commit } from '../store';
 import { Opening, Reveal, type Phase, type OpenResult } from './giftbox/Opening';
+import { Shop } from './giftbox/Shop';
 
 const SHAKE_MS = 1200;
 
@@ -82,7 +83,7 @@ export function GiftBox() {
           )}
         </div>
       ) : (
-        <p class="giftbox-soon">即將推出</p>
+        <Shop />
       )}
     </div>
   );
