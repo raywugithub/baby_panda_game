@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/preact';
 import { App } from './App';
 import { saveFailed } from '../platform/storage';
@@ -6,10 +6,16 @@ import { game, restored, commit } from './store';
 import { tab, overlay, goTab } from './nav';
 import { createInitialState } from '../core/state';
 
+const seeded = () => ({ ...createInitialState(1, 0), onboardingDone: true });
+
+beforeEach(() => {
+  commit(seeded());
+});
+
 afterEach(() => {
   goTab('home');
   overlay.value = null;
-  commit(createInitialState(1, 0));
+  commit(seeded());
 });
 
 describe('App 殼層', () => {
@@ -42,7 +48,7 @@ describe('App 殼層', () => {
     expect(screen.getByTestId('tab-home').getAttribute('aria-current')).toBeNull();
   });
   it('有待播劇情且沒有覆蓋層時自動開啟對話', () => {
-    commit({ ...createInitialState(1, 0), pendingBeat: 'prologue' });
+    commit({ ...seeded(), pendingBeat: 'prologue' });
     render(<App />);
     expect(overlay.value).toEqual({ kind: 'dialogue', scriptId: 'prologue' });
     expect(game.value.pendingBeat).toBe('prologue');

@@ -53,7 +53,14 @@ const PANEL_LABEL: Record<Panel, string> = { feed: '餵食', bath: '洗澡', pla
 // 已處理過的升階事件；模組層級保存，避免重新掛載時重複慶祝。RewardToast 會另行消化佇列。
 const seenStageUps = new WeakSet<GameEvent>();
 
-export function Home() {
+export interface HomeProps {
+  /** 教學步驟的提示泡泡（Task 28）；沒有值時不顯示。 */
+  tutorialHint?: string;
+  /** 讓 Home 仍可作為無屬性的 ComponentType 登記於 registry。 */
+  [extra: string]: unknown;
+}
+
+export function Home({ tutorialHint }: HomeProps = {}) {
   const s = game.value;
   const stage = currentStage(s);
   const mood = moodOf(s, now(), justOpenedAfterMs.value);
@@ -215,6 +222,7 @@ export function Home() {
           />
         </PandaTapZone>
         {dream ? <p class="dream-bubble" data-testid="dream-bubble">{dream.text}</p> : null}
+        {tutorialHint ? <p class="tutorial-hint" data-testid="tutorial-hint">{tutorialHint}</p> : null}
         {mood === 'sleepy' ? <p class="sleepy-hint" data-testid="sleepy-hint">抱抱我、餵我吃點東西</p> : null}
       </div>
 

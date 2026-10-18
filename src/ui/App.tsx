@@ -1,12 +1,26 @@
-import { useEffect } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { game, dismissOverlay, restored } from './store';
 import { tab, overlay, goTab, openOverlay, TAB_ORDER } from './nav';
 import { TAB_SCREENS, OVERLAY_SCREENS } from './screens/registry';
 import { saveFailed, sizeWarning, storageUnavailable } from '../platform/storage';
 import { RewardToast } from './components/RewardToast';
+import { Onboarding } from './screens/Onboarding';
+import { initialStep, hasProgress, readMoveOutDismissed, OnbStep } from './onboarding';
+import { isIOS, isStandalone } from '../platform/pwa';
 
 export function App() {
   const Screen = TAB_SCREENS[tab.value];
+  // C11：引導步驟只在 App 啟動時計算一次，工作階段中不會再跳出搬家流程。
+  const [onb, setOnb] = useState<OnbStep | null>(() => {
+    const s = game.value;
+    return initialStep({
+      isIOS: isIOS(),
+      standalone: isStandalone(),
+      hasProgress: hasProgress(s),
+      onboardingDone: s.onboardingDone,
+      moveOutDismissed: readMoveOutDismissed(),
+    });
+  });
   const current = overlay.value;
   const pendingBeat = game.value.pendingBeat;
   const overlayOpen = current !== null;
@@ -37,7 +51,7 @@ export function App() {
         <RewardToast />
 
         <main class="screen">
-          <Screen />
+          {onb !== null ? <Onboarding step={onb} onExit={() => setOnb(null)} /> : <Screen />}
         </main>
 
         {current && OverlayScreen && (
@@ -47,20 +61,22 @@ export function App() {
           </div>
         )}
 
-        <nav class="tabbar">
-          {TAB_ORDER.map(({ tab: t, icon, label }) => (
-            <button
-              key={t}
-              type="button"
-              aria-label={label}
-              data-testid={`tab-${t}`}
-              aria-current={tab.value === t ? 'page' : undefined}
-              onClick={() => goTab(t)}
-            >
-              <span aria-hidden="true">{icon}</span> {label}
-            </button>
-          ))}
-        </nav>
+        {onb === null && (
+          <nav class="tabbar">
+            {TAB_ORDER.map(({ tab: t, icon, label }) => (
+              <button
+                key={t}
+                type="button"
+                aria-label={label}
+                data-testid={`tab-${t}`}
+                aria-current={tab.value === t ? 'page' : undefined}
+                onClick={() => goTab(t)}
+              >
+                <span aria-hidden="true">{icon}</span> {label}
+              </button>
+            ))}
+          </nav>
+        )}
       </div>
     </>
   );
