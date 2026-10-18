@@ -33,7 +33,9 @@ function areaOf(part: string | null): Area {
 
 /** 依部件移動量產生 transform：先位移，再以部件中心為軸旋轉。 */
 function moveTransform(m: PartMove | undefined, [px, py]: readonly [number, number]): string {
-  return `translate(${m?.dx ?? 0} ${m?.dy ?? 0}) rotate(${m?.rot ?? 0} ${px} ${py})`;
+  const base = `translate(${m?.dx ?? 0} ${m?.dy ?? 0}) rotate(${m?.rot ?? 0} ${px} ${py})`;
+  if (m?.sx === undefined && m?.sy === undefined) return base;
+  return `${base} translate(${px} ${py}) scale(${m?.sx ?? 1} ${m?.sy ?? 1}) translate(${-px} ${-py})`;
 }
 
 /** 嬰兒圓頭：階段 1 為 1.15，每升一階少 0.05，階段 4 起為 1。 */

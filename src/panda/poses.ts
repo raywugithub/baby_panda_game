@@ -2,7 +2,8 @@ export type PandaPose = 'sit' | 'armsOut' | 'hug' | 'sleep' | 'eat' | 'sour' | '
   | 'bath' | 'shake' | 'shy' | 'busyBook' | 'sneeze' | 'hideFood' | 'chase' | 'dance' | 'stare' | 'spin'
   | 'celebrate' | 'yawn' | 'clingy' | 'walk' | 'boxPeek' | 'shakeBox' | 'useSit' | 'useSleep' | 'useSwing' | 'useRead';
 
-export interface PartMove { dx?: number; dy?: number; rot?: number }
+/** sx/sy 為部件在旋轉前、以旋轉軸為中心的縮放（sy 小於 1 即縮短，用於前伸手臂的透視縮短）。 */
+export interface PartMove { dx?: number; dy?: number; rot?: number; sx?: number; sy?: number }
 
 export interface PoseSpec {
   head?: PartMove;
@@ -26,7 +27,7 @@ export const ALL_POSES: PandaPose[] = [
 
 export const POSE_TABLE: Record<PandaPose, PoseSpec> = {
   sit:        { armL: { rot: 12 }, armR: { rot: -12 }, eyes: 'open', mouth: 'smile', cheeks: false },
-  armsOut:    { head: { dy: -2 }, armL: { rot: -120, dx: 2, dy: -6 }, armR: { rot: 120, dx: -2, dy: -6 }, eyes: 'open', mouth: 'smile', cheeks: false },
+  armsOut:    { head: { dy: -2 }, armL: { rot: -100, dx: 3, dy: -4, sx: 1.2, sy: 0.55 }, armR: { rot: 100, dx: -3, dy: -4, sx: 1.2, sy: 0.55 }, eyes: 'open', mouth: 'smile', cheeks: false },
   hug:        { head: { rot: 6 }, armL: { rot: -35, dx: 14, dy: -4 }, armR: { rot: 35, dx: -14, dy: -4 }, eyes: 'squint', mouth: 'smile', cheeks: true },
   sleep:      { head: { dx: 0, dy: 6, rot: 12 }, body: { dy: 8, rot: 6 }, armL: { rot: 25, dy: 8 }, armR: { rot: -10, dy: 10 }, legL: { rot: 10 }, legR: { rot: -6 }, eyes: 'closed', mouth: 'flat', cheeks: false, nightcap: true },
   eat:        { head: { rot: -6 }, armL: { rot: -55, dx: -6, dy: -20 }, armR: { rot: 12 }, eyes: 'open', mouth: 'chew', cheeks: false },
