@@ -1,9 +1,13 @@
 import { useState } from 'preact/hooks';
 import { Dress } from './closet/Dress';
+import { Decorate } from './closet/Decorate';
 
-// 衣櫃分段：換裝（本任務）；布置由 Task 20 加入。
-type Segment = 'dress';
-const SEGMENTS: { key: Segment; label: string }[] = [{ key: 'dress', label: '換裝' }];
+// 衣櫃分段：換裝、布置。
+type Segment = 'dress' | 'decorate';
+const SEGMENTS: { key: Segment; label: string }[] = [
+  { key: 'dress', label: '換裝' },
+  { key: 'decorate', label: '布置' },
+];
 
 export function Closet() {
   const [seg, setSeg] = useState<Segment>('dress');
@@ -21,7 +25,7 @@ export function Closet() {
           </button>
         ))}
       </div>
-      {seg === 'dress' ? <Dress /> : null}
+      {seg === 'dress' ? <Dress /> : <Decorate />}
     </div>
   );
 }
