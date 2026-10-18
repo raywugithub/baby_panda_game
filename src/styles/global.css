@@ -900,3 +900,132 @@ button {
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
+
+.giftbox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.giftbox-segments {
+  display: flex;
+  gap: 8px;
+}
+
+.giftbox-segments button {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--fur);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
+.giftbox-segments button[aria-pressed="true"] {
+  background: #8A5A24;
+  color: #ffffff;
+}
+
+.giftbox-machine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.giftbox-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 280px;
+}
+
+.giftbox-box {
+  margin-top: -40px;
+  line-height: 0;
+}
+
+.giftbox-box.is-shaking {
+  animation: giftbox-shake 0.3s ease-in-out infinite;
+}
+
+@keyframes giftbox-shake {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+}
+
+.giftbox-rates {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.giftbox-open {
+  width: 100%;
+  max-width: 360px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: #8A5A24;
+  color: #ffffff;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.giftbox-open:disabled {
+  background: var(--fur-shade);
+  color: var(--ink);
+}
+
+.giftbox-reveal {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 8px;
+  width: 100%;
+  max-width: 360px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  border-radius: 18px;
+  background: var(--chain-light);
+}
+
+.giftbox-reveal > svg {
+  grid-row: span 3;
+}
+
+.giftbox-name {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.giftbox-rarity,
+.giftbox-status {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.giftbox-ack {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: #8A5A24;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+}
+
+.giftbox-soon {
+  margin: 24px 0;
+  text-align: center;
+  color: var(--amber);
+}

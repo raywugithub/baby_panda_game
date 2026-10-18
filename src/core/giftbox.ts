@@ -4,7 +4,7 @@ import { giftPool, getItem } from './catalog';
 
 export const GIFT_COST = 50;
 export const GIFT_RATES: Record<Rarity, number> = { common: 0.75, shiny: 0.22, rainbow: 0.03 };
-const MARSHMALLOW_FOR_DUPLICATE: Record<Rarity, number> = { common: 5, shiny: 15, rainbow: 40 };
+export const MARSHMALLOW_FOR_DUPLICATE: Record<Rarity, number> = { common: 5, shiny: 15, rainbow: 40 };
 
 export function rollRarity(r: number): Rarity {
   if (r < GIFT_RATES.common) return 'common';
