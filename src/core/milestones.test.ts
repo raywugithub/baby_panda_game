@@ -27,8 +27,11 @@ describe('milestones', () => {
     expect(out.state.freeBoxes).toBe(s0.freeBoxes + 1);
     expect(out.events).toContainEqual({ type: 'milestone', category: 'furniture', count: 10 });
   });
-  it('is idempotent', () => {
-    const once = checkMilestones(withInventory(['furn-nest', 'furn-low-table']));
+  it('is idempotent after a claim: second call returns no events and equal state', () => {
+    const ids = ITEMS.filter((i) => i.category === 'furniture' && !i.id.startsWith('furn-mianhua') && !i.id.startsWith('furn-juzi') && !i.id.startsWith('furn-manman') && !i.id.startsWith('furn-gulu')).slice(0, 10).map((i) => i.id);
+    const once = checkMilestones(withInventory(ids));
+    expect(once.events).toContainEqual({ type: 'milestone', category: 'furniture', count: 10 });
+    expect(once.state.milestonesClaimed.furniture).toBe(1);
     const twice = checkMilestones(once.state);
     expect(twice.events).toEqual([]);
     expect(twice.state).toEqual(once.state);
