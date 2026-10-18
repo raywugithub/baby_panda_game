@@ -81,14 +81,19 @@ describe('idlePoseFor', () => {
 });
 
 describe('Home 互動細節', () => {
-  it('夜裡點醒睡覺中的熊貓：設定 awakeUntil 並改為醒著的姿勢', () => {
+  it('夜裡點醒睡覺中的熊貓：設定 awakeUntil，先打哈欠 0.8 秒再回到醒著的姿勢', () => {
+    vi.useFakeTimers();
     clock.t = new Date(2026, 9, 18, 23, 30).getTime();
     render(<Home />);
     const svg = document.querySelector('svg[data-pose]')!;
     expect(svg.getAttribute('data-pose')).toBe('sleep');
     fireEvent.pointerDown(svg);
     expect(game.value.awakeUntil).toBe(clock.t + 30 * 60_000);
+    expect(document.querySelector('svg[data-pose]')!.getAttribute('data-pose')).toBe('yawn');
+    act(() => { vi.advanceTimersByTime(800); });
     expect(document.querySelector('svg[data-pose]')!.getAttribute('data-pose')).toBe('dance');
+
+    vi.useRealTimers();
   });
   it('熊貓區先醒來再計數：睡覺中連戳 8 下仍觸發「假裝很忙」，且只寫入一次狀態', () => {
     clock.t = new Date(2026, 9, 18, 23, 30).getTime();

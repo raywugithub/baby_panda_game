@@ -2,6 +2,7 @@ import { render } from 'preact';
 import { registerSW } from 'virtual:pwa-register';
 import './styles/global.css';
 import { App } from './ui/App';
+import { openOverlay } from './ui/nav';
 import { boot, game } from './ui/store';
 import { updateAvailable, setUpdateHandler } from './platform/pwa';
 import { flushOnHide, maybeBackup } from './platform/storage';
@@ -26,4 +27,6 @@ try {
 }
 
 render(<App />, document.getElementById('app')!);
-void boot(now());
+void boot(now()).then(({ welcome }) => {
+  if (welcome) openOverlay({ kind: 'welcome' });
+});

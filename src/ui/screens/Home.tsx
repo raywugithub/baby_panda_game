@@ -21,6 +21,7 @@ import { HugButton } from '../components/care/HugButton';
 import { Kitchen } from './Kitchen';
 import { REACTION_POSE } from '../../panda/reactions';
 import type { GameEvent } from '../../core/events';
+import type { GameState } from '../../core/state';
 import { sfx } from '../../platform/audio';
 import { mulberry32, hash, chance } from '../../core/rng';
 import { localDate } from '../../core/time';
@@ -41,6 +42,7 @@ const SHAKE_MS = 1000; // 點項圈晃動姿勢
 const SNEEZE_MS = 1500; // 打噴嚏姿勢
 const SNEEZE_CHECK_MS = 120_000; // 打噴嚏檢查間隔：每 2 分鐘最多一次
 const DREAM_MS = 4000; // 夢話泡泡
+const YAWN_MS = 800; // 醒來時打哈欠
 
 /** 短暫覆蓋的姿勢（小驚喜）；優先序在慶祝與餵食反應之後、待機之前。 */
 interface Transient { pose: PandaPose; ms: number }
@@ -66,6 +68,15 @@ export function Home() {
 
   function flash(pose: PandaPose, ms: number) {
     setTransient({ pose, ms });
+  }
+
+  /** 睡覺中被叫醒（契約 10.6）：清除離線睡覺旗標、設定 awakeUntil、打哈欠；未睡著時原樣回傳。 */
+  function wakeUp(cur: GameState, t: number): GameState {
+    const sleeping = moodOf(cur, t, justOpenedAfterMs.value) === 'sleeping';
+    justOpenedAfterMs.value = null;
+    if (!sleeping) return cur;
+    flash('yawn', YAWN_MS);
+    return { ...cur, awakeUntil: t + AWAKE_MS };
   }
 
   // 開啟家畫面：有食物時可能偷吃被抓包（每次開啟只判定一次）。
@@ -122,8 +133,10 @@ export function Home() {
     return () => clearTimeout(t);
   }, [reaction]);
 
-  /** 餵食面板需要嘴巴的螢幕座標（C12）；沒有嘴巴元素時退回熊貓區塊中心。 */
+  /** 餵食面板需要嘴巴的螢幕座標（C12）；沒有嘴巴元素時退回熊貓區塊中心。照顧前先醒來。 */
   function togglePanel(p: Panel) {
+    const woken = wakeUp(game.value, now());
+    if (woken !== game.value) commit(woken);
     if (p === 'feed' && panel !== 'feed') {
       const mouthEl = pandaBox.current?.querySelector('[data-testid="panda-mouth"]');
       const r = (mouthEl ?? pandaBox.current)?.getBoundingClientRect();
@@ -137,13 +150,8 @@ export function Home() {
    * 醒來與計數合併成一次 commit，避免後寫入覆蓋 awakeUntil。
    */
   function onPandaPointerDown() {
-    const cur = game.value;
     const t = now();
-    let next = cur;
-    if (moodOf(cur, t, justOpenedAfterMs.value) === 'sleeping') {
-      next = { ...cur, awakeUntil: t + AWAKE_MS };
-    }
-    justOpenedAfterMs.value = null;
+    const next = wakeUp(game.value, t);
     const r = recordPoke(next.pokeLog, t);
     commit({ ...next, pokeLog: r.pokeLog });
     if (r.trigger) flash('busyBook', BUSY_MS);
@@ -159,6 +167,8 @@ export function Home() {
 
   /** 抱抱後有 30% 機率害羞（以種子亂數決定）。 */
   function onHug() {
+    const woken = wakeUp(game.value, now());
+    if (woken !== game.value) commit(woken);
     const cur = game.value;
     if (shyAfterHug(mulberry32(hash(cur.seed, now(), 'shy')))) flash('shy', SHY_MS);
   }
