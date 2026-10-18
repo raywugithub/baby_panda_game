@@ -3,7 +3,7 @@ import type { PandaPose } from '../../panda/Panda';
 import { Panda } from '../../panda/Panda';
 import { moodOf, idlePoseFor } from '../../core/mood';
 import { currentStage } from '../../core/growth';
-import { now } from '../../platform/clock';
+import { now, randomSeed } from '../../platform/clock';
 import { burst } from '../../platform/particles';
 import { game, commit, eventQueue, justOpenedAfterMs } from '../store';
 import { PandaTapZone } from '../components/Surprises';
@@ -22,11 +22,14 @@ import { Kitchen } from './Kitchen';
 import { REACTION_POSE } from '../../panda/reactions';
 import type { GameEvent } from '../../core/events';
 import type { GameState } from '../../core/state';
-import { sfx } from '../../platform/audio';
+import { playPendantSounds } from '../../platform/pendantSound';
 import { mulberry32, hash, chance } from '../../core/rng';
 import { localDate } from '../../core/time';
 import { shouldHiccup } from '../../core/care';
 import { diaryDreamOn } from '../../core/dream';
+import { pickInteraction } from '../../core/room';
+import { pendantSoundIds } from '../../core/pendants';
+import { interactionPose } from '../room/interactions';
 import { hideFoodOnOpen, shyAfterHug, hiccupDream, recordPoke } from '../../core/surprises';
 
 export { idlePoseFor };
@@ -43,6 +46,9 @@ const SNEEZE_MS = 1500; // 打噴嚏姿勢
 const SNEEZE_CHECK_MS = 120_000; // 打噴嚏檢查間隔：每 2 分鐘最多一次
 const DREAM_MS = 4000; // 夢話泡泡
 const YAWN_MS = 800; // 醒來時打哈欠
+const INTERACTION_CHECK_MS = 15_000; // 待機時每 15 秒判定一次互動家具
+const INTERACTION_MS = 3000; // 互動姿勢持續 3 秒
+const COLLAR_NOTE_GAP_MS = 350; // 點項圈：各墜飾依序叮噹的間隔
 
 /** 短暫覆蓋的姿勢（小驚喜）；優先序在慶祝與餵食反應之後、待機之前。 */
 interface Transient { pose: PandaPose; ms: number }
@@ -71,6 +77,7 @@ export function Home({ tutorialHint }: HomeProps = {}) {
   const pandaBox = useRef<HTMLDivElement>(null);
   const [transient, setTransient] = useState<Transient | null>(null);
   const [dream, setDream] = useState<{ text: string } | null>(null);
+  const [rand] = useState(() => mulberry32(randomSeed()));
 
   function flash(pose: PandaPose, ms: number) {
     setTransient({ pose, ms });
@@ -102,6 +109,17 @@ export function Home({ tutorialHint }: HomeProps = {}) {
       if (moodOf(cur, t, null) === 'sleeping') return;
       if (chance(mulberry32(hash(cur.seed, t, 'sneeze')), 0.5)) flash('sneeze', SNEEZE_MS);
     }, SNEEZE_CHECK_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  // 待機時偶爾讓熊貓使用房間裡的互動家具（小沙發、小床、鞦韆等）；只在 normal 心情觸發。
+  useEffect(() => {
+    const id = setInterval(() => {
+      const cur = game.value;
+      if (moodOf(cur, now(), null) !== 'normal') return;
+      const pick = pickInteraction(cur.rooms.living, rand);
+      if (pick) flash(interactionPose(pick.interaction), INTERACTION_MS);
+    }, INTERACTION_CHECK_MS);
     return () => clearInterval(id);
   }, []);
 
@@ -168,7 +186,8 @@ export function Home({ tutorialHint }: HomeProps = {}) {
   /** Panda 內部部件的點擊：只處理點項圈（醒來與計數已由 onPandaPointerDown 負責）。 */
   function onPandaArea(area: 'body' | 'arms' | 'collar' | 'mouth') {
     if (area === 'collar') {
-      sfx('jingle');
+      const cur = game.value;
+      if (cur.settings.sound) playPendantSounds(pendantSoundIds(cur.equipped.pendants), COLLAR_NOTE_GAP_MS);
       flash('shake', SHAKE_MS);
     }
   }
@@ -212,7 +231,7 @@ export function Home({ tutorialHint }: HomeProps = {}) {
       <InstallHint />
       <Needs />
 
-      <RoomView stage={stage}>
+      <RoomView room={s.rooms.living} stage={stage}>
         <div class={`home-panda${transientPose === 'shy' ? ' shy-ears' : ''}`} ref={pandaBox}>
           <PandaTapZone busy={transientPose === 'busyBook'} onPointerDown={onPandaPointerDown}>
             <Panda

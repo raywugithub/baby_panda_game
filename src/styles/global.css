@@ -328,37 +328,18 @@ button {
 .room {
   position: relative;
   width: 100%;
-  aspect-ratio: 6 / 5;
+  aspect-ratio: 5 / 4;
   overflow: hidden;
   border-radius: 12px;
 }
 
-.room-wall,
-.room-floor {
+/* 房間 SVG（viewBox 0 0 400 320）鋪滿房間；指標穿透，讓熊貓與物品可點。 */
+.room-svg {
   position: absolute;
-  left: 0;
-  right: 0;
-}
-
-.room-wall {
-  top: 0;
-  height: 25%;
-}
-
-.room-floor {
-  bottom: 0;
-  height: 75%;
-}
-
-.room-item {
-  position: absolute;
-}
-
-.room-box {
+  inset: 0;
   width: 100%;
   height: 100%;
-  background: var(--fur-shade);
-  border-radius: 6px;
+  pointer-events: none;
 }
 
 .care-row,
