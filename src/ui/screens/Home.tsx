@@ -17,6 +17,7 @@ import { FeedTray } from '../components/care/FeedTray';
 import { BathArea } from '../components/care/BathArea';
 import { PlayMenu } from '../components/care/PlayMenu';
 import { HugButton } from '../components/care/HugButton';
+import { Kitchen } from './Kitchen';
 import { REACTION_POSE } from '../../panda/reactions';
 import type { GameEvent } from '../../core/events';
 
@@ -133,7 +134,7 @@ export function Home() {
           ) : null}
           {panel === 'bath' ? <BathArea /> : null}
           {panel === 'play' ? <PlayMenu /> : null}
-          {panel === 'kitchen' ? <p>即將推出</p> : null}
+          {panel === 'kitchen' ? <Kitchen /> : null}
         </section>
       ) : null}
 
