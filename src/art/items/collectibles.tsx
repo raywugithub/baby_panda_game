@@ -1,5 +1,8 @@
 import type { JSX } from 'preact';
 import { ItemSvg, PAL, OUTLINE, Rainbow } from './primitives';
+import {
+  MushroomBody, SHELL_PATH, SHELL_RIBS_PATH, SHOOT_PATH, STRAWBERRY_LEAF_PATH, STRAWBERRY_PATH, starPoints,
+} from './motifs';
 
 // 貼紙（sticker-01…24）與相框（frame-01…06）。貼紙不含底色；相框中央挖空，照片會透出來。
 // 貼紙順序與 content/items/collectibles.ts 的 STICKER_NAMES 相同。
@@ -7,12 +10,7 @@ import { ItemSvg, PAL, OUTLINE, Rainbow } from './primitives';
 const HEART = 'M50 86 C22 66 12 48 18 36 C24 22 42 22 50 34 C58 22 76 22 82 36 C88 48 78 66 50 86Z';
 
 export function StickerStar({ size }: { size: number }): JSX.Element {
-  const pts = Array.from({ length: 10 }, (_, i) => {
-    const r = i % 2 === 0 ? 40 : 18;
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    return `${(50 + r * Math.cos(a)).toFixed(2)},${(52 + r * Math.sin(a)).toFixed(2)}`;
-  }).join(' ');
-  return <ItemSvg size={size}><polygon points={pts} fill={PAL.gold} {...OUTLINE} /></ItemSvg>;
+  return <ItemSvg size={size}><polygon points={starPoints(50, 52, 40, 18)} fill={PAL.gold} {...OUTLINE} /></ItemSvg>;
 }
 
 export function StickerHeart({ size }: { size: number }): JSX.Element {
@@ -47,8 +45,7 @@ export function StickerMoon({ size }: { size: number }): JSX.Element {
 export function StickerMushroom({ size }: { size: number }): JSX.Element {
   return (
     <ItemSvg size={size}>
-      <path d="M12 52 Q12 18 50 18 Q88 18 88 52 Q50 60 12 52Z" fill={PAL.pinkDeep} {...OUTLINE} />
-      <rect x={38} y={52} width={24} height={34} rx={8} fill={PAL.creamLight} {...OUTLINE} />
+      <MushroomBody cap={PAL.pinkDeep} stem={PAL.creamLight} />
       <circle cx={30} cy={36} r={5} fill={PAL.white} />
       <circle cx={68} cy={40} r={4} fill={PAL.white} />
     </ItemSvg>
@@ -130,8 +127,8 @@ export function StickerFish({ size }: { size: number }): JSX.Element {
 export function StickerShell({ size }: { size: number }): JSX.Element {
   return (
     <ItemSvg size={size}>
-      <path d="M50 22 C26 26 16 50 22 72 Q50 92 78 72 C84 50 74 26 50 22Z" fill={PAL.creamLight} {...OUTLINE} />
-      <path d="M50 26 V82 M50 26 L30 78 M50 26 L70 78" fill="none" stroke={PAL.pinkDeep} stroke-width={2} />
+      <path d={SHELL_PATH} fill={PAL.creamLight} {...OUTLINE} />
+      <path d={SHELL_RIBS_PATH} fill="none" stroke={PAL.pinkDeep} stroke-width={2} />
     </ItemSvg>
   );
 }
@@ -204,7 +201,7 @@ export function StickerPaw({ size }: { size: number }): JSX.Element {
 export function StickerShoot({ size }: { size: number }): JSX.Element {
   return (
     <ItemSvg size={size}>
-      <path d="M50 8 Q70 40 66 80 Q50 92 34 80 Q30 40 50 8Z" fill={PAL.bamboo} {...OUTLINE} />
+      <path d={SHOOT_PATH} fill={PAL.bamboo} {...OUTLINE} />
       <path d="M34 62 L44 56 M66 56 L56 52" fill="none" stroke={PAL.brownLight} stroke-width={3} stroke-linecap="round" />
     </ItemSvg>
   );
@@ -213,8 +210,8 @@ export function StickerShoot({ size }: { size: number }): JSX.Element {
 export function StickerStrawberry({ size }: { size: number }): JSX.Element {
   return (
     <ItemSvg size={size}>
-      <path d="M50 88 C24 72 14 52 18 38 C22 24 40 22 50 32 C60 22 78 24 82 38 C86 52 76 72 50 88Z" fill={PAL.strawberry} {...OUTLINE} />
-      <path d="M36 22 L44 30 L50 24 L56 30 L64 22 L60 34 L40 34Z" fill={PAL.bamboo} {...OUTLINE} stroke-width={1.8} />
+      <path d={STRAWBERRY_PATH} fill={PAL.strawberry} {...OUTLINE} />
+      <path d={STRAWBERRY_LEAF_PATH} fill={PAL.bamboo} {...OUTLINE} stroke-width={1.8} />
       <circle cx={38} cy={50} r={2} fill={PAL.goldLight} />
       <circle cx={62} cy={50} r={2} fill={PAL.goldLight} />
     </ItemSvg>

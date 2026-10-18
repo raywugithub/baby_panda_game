@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { ItemSvg, PAL, OUTLINE, Rainbow, Sparkle } from './primitives';
+import { starPoints } from './motifs';
 
 // 各部位的繪製原點皆在 100×100 方框中央；頭飾畫在頂端、臉飾對齊眼睛（約 y=21）、
 // 身體衣物覆蓋肚子（約 y=50）、手持與尾巴物件則置中於方框。
@@ -237,15 +238,10 @@ export function FluffyTail({ size }: { size: number }): JSX.Element {
 
 /** 星星尾飾（彩虹）：尾巴尖上的彩虹色小星星。 */
 export function StarTail({ size }: { size: number }): JSX.Element {
-  const pts = Array.from({ length: 10 }, (_, i) => {
-    const r = i % 2 === 0 ? 44 : 19;
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    return `${(50 + r * Math.cos(a)).toFixed(2)},${(52 + r * Math.sin(a)).toFixed(2)}`;
-  }).join(' ');
   return (
     <ItemSvg size={size}>
       <defs><Rainbow id="outfit-tail-star" /></defs>
-      <polygon points={pts} fill="url(#rb-outfit-tail-star)" {...OUTLINE} />
+      <polygon points={starPoints(50, 52, 44, 19)} fill="url(#rb-outfit-tail-star)" {...OUTLINE} />
     </ItemSvg>
   );
 }

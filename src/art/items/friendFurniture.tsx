@@ -10,6 +10,7 @@ export function MianhuaMailbox({ size }: { size: number }): JSX.Element {
       <rect x={28} y={38} width={44} height={8} rx={3} fill={PAL.creamLight} {...OUTLINE} stroke-width={1.8} />
       <rect x={60} y={24} width={12} height={9} rx={2} fill={PAL.white} {...OUTLINE} stroke-width={1.5} />
       <circle cx={80} cy={34} r={4} fill={PAL.gold} {...OUTLINE} stroke-width={1.2} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -30,6 +31,7 @@ export function MianhuaLetterCabinet({ size }: { size: number }): JSX.Element {
           </g>
         );
       })}
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -45,6 +47,7 @@ export function MianhuaCart({ size }: { size: number }): JSX.Element {
       <rect x={44} y={20} width={24} height={16} rx={2} fill={PAL.white} {...OUTLINE} stroke-width={1.8} />
       <circle cx={24} cy={80} r={7} fill={PAL.brown} {...OUTLINE} stroke-width={1.8} />
       <circle cx={70} cy={80} r={7} fill={PAL.brown} {...OUTLINE} stroke-width={1.8} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -59,6 +62,7 @@ export function JuziCandyJar({ size }: { size: number }): JSX.Element {
       <circle cx={56} cy={44} r={8} fill={PAL.gold} {...OUTLINE} stroke-width={1.8} />
       <circle cx={66} cy={66} r={8} fill={PAL.terracotta} {...OUTLINE} stroke-width={1.8} />
       <circle cx={40} cy={72} r={8} fill={PAL.gold} {...OUTLINE} stroke-width={1.8} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -74,6 +78,7 @@ export function JuziCounter({ size }: { size: number }): JSX.Element {
       <circle cx={60} cy={24} r={8} fill={PAL.pink} {...OUTLINE} stroke-width={1.8} />
       <circle cx={78} cy={24} r={8} fill={PAL.terracotta} {...OUTLINE} stroke-width={1.8} />
       <rect x={30} y={60} width={40} height={16} rx={3} fill={PAL.creamLight} {...OUTLINE} stroke-width={1.8} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -90,6 +95,7 @@ export function JuziFoxLantern({ size }: { size: number }): JSX.Element {
       <circle cx={38} cy={50} r={3} fill={PAL.brown} />
       <circle cx={62} cy={50} r={3} fill={PAL.brown} />
       <circle cx={50} cy={64} r={3} fill={PAL.brown} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -104,6 +110,7 @@ export function ManmanStone({ size }: { size: number }): JSX.Element {
       <circle cx={82} cy={62} r={8} fill={PAL.bamboo} {...OUTLINE} stroke-width={1.8} />
       <circle cx={84} cy={60} r={1.6} fill={PAL.brown} />
       <path d="M20 66 L14 70 M80 66 L86 72" fill="none" {...OUTLINE} stroke-width={3} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -119,6 +126,7 @@ export function ManmanStoryShelf({ size }: { size: number }): JSX.Element {
       <rect x={14} y={72} width={72} height={12} rx={2} fill={PAL.navy} {...OUTLINE} stroke-width={1.8} />
       <circle cx={70} cy={48} r={9} fill={PAL.bamboo} {...OUTLINE} stroke-width={1.8} />
       <circle cx={74} cy={44} r={2} fill={PAL.brown} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -131,6 +139,7 @@ export function ManmanTent({ size }: { size: number }): JSX.Element {
       <path d="M50 16 L50 88 M28 30 L40 88 M72 30 L60 88" fill="none" stroke={PAL.bambooDark} stroke-width={2} />
       <path d="M36 88 Q50 56 64 88Z" fill={PAL.navy} {...OUTLINE} stroke-width={2} />
       <circle cx={24} cy={70} r={6} fill={PAL.gold} {...OUTLINE} stroke-width={1.6} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -149,6 +158,7 @@ export function GuluWorkbench({ size }: { size: number }): JSX.Element {
       <circle cx={28} cy={34} r={4} fill={PAL.creamLight} />
       {tooth(66, 30, 9, PAL.bamboo)}
       <rect x={50} y={36} width={6} height={8} fill={PAL.navy} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -163,6 +173,7 @@ export function GuluGearClock({ size }: { size: number }): JSX.Element {
       <line x1={34} y1={36} x2={34} y2={28} {...OUTLINE} stroke-width={2} />
       <line x1={34} y1={36} x2={41} y2={38} {...OUTLINE} stroke-width={1.8} />
       <circle cx={70} cy={70} r={4} fill={PAL.creamLight} />
+      <Sparkle />
     </ItemSvg>
   );
 }
@@ -179,6 +190,7 @@ export function GuluRobot({ size }: { size: number }): JSX.Element {
       <circle cx={60} cy={40} r={3} fill={PAL.navy} />
       <rect x={30} y={62} width={40} height={24} rx={6} fill={PAL.navy} {...OUTLINE} />
       <circle cx={50} cy={74} r={4} fill={PAL.gold} />
+      <Sparkle />
     </ItemSvg>
   );
 }

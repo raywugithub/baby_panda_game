@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { ItemSvg, PAL, OUTLINE, Rainbow, Sparkle } from './primitives';
+import { SHELL_PATH, SHELL_RIBS_PATH, starPoints } from './motifs';
 
 /** 墜飾共用的吊繩與小圈：墜飾本體畫在 y≈26 以下。 */
 function Hook(): JSX.Element {
@@ -16,8 +17,8 @@ export function PendantShell({ size }: { size: number }): JSX.Element {
   return (
     <ItemSvg size={size}>
       <Hook />
-      <path d="M50 22 C26 26 16 50 22 72 Q50 92 78 72 C84 50 74 26 50 22Z" fill={PAL.creamLight} {...OUTLINE} />
-      <path d="M50 26 V82 M50 26 L30 78 M50 26 L70 78 M50 26 L40 80 M50 26 L60 80" fill="none" stroke={PAL.pinkDeep} stroke-width={1.6} />
+      <path d={SHELL_PATH} fill={PAL.creamLight} {...OUTLINE} />
+      <path d={`${SHELL_RIBS_PATH} M50 26 L40 80 M50 26 L60 80`} fill="none" stroke={PAL.pinkDeep} stroke-width={1.6} />
     </ItemSvg>
   );
 }
@@ -69,15 +70,10 @@ export function PendantCloud({ size }: { size: number }): JSX.Element {
 
 /** 星星墜飾（閃亮）：金色五角星。 */
 export function PendantStar({ size }: { size: number }): JSX.Element {
-  const pts = Array.from({ length: 10 }, (_, i) => {
-    const r = i % 2 === 0 ? 30 : 13;
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    return `${(50 + r * Math.cos(a) * 0.95).toFixed(2)},${(58 + r * Math.sin(a) * 0.95).toFixed(2)}`;
-  }).join(' ');
   return (
     <ItemSvg size={size}>
       <Hook />
-      <polygon points={pts} fill={PAL.gold} {...OUTLINE} />
+      <polygon points={starPoints(50, 58, 29, 12.5)} fill={PAL.gold} {...OUTLINE} />
       <Sparkle x={82} y={30} r={3} />
     </ItemSvg>
   );

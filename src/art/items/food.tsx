@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { ItemSvg, PAL, OUTLINE, Sparkle } from './primitives';
+import { MushroomBody, SHOOT_PATH, STRAWBERRY_LEAF_PATH, STRAWBERRY_PATH } from './motifs';
 
 // 食材圖示：食材不算重複，依 ing-* id 登記；畫在 100×100 方框中央。
 
@@ -7,7 +8,7 @@ import { ItemSvg, PAL, OUTLINE, Sparkle } from './primitives';
 export function BambooShoot({ size }: { size: number }): JSX.Element {
   return (
     <ItemSvg size={size}>
-      <path d="M50 8 Q70 40 66 80 Q50 92 34 80 Q30 40 50 8Z" fill={PAL.bamboo} {...OUTLINE} />
+      <path d={SHOOT_PATH} fill={PAL.bamboo} {...OUTLINE} />
       <path d="M34 62 L44 56 M66 56 L56 52 M40 80 L50 74 M60 74 L68 68" fill="none" stroke={PAL.brownLight} stroke-width={3} stroke-linecap="round" />
       <path d="M50 8 Q56 2 60 8" fill="none" {...OUTLINE} stroke-width={2} />
     </ItemSvg>
@@ -19,8 +20,8 @@ export function Strawberry({ size }: { size: number }): JSX.Element {
   const seeds: [number, number][] = [[38, 40], [62, 40], [50, 52], [36, 60], [64, 60], [50, 70]];
   return (
     <ItemSvg size={size}>
-      <path d="M50 88 C24 72 14 52 18 38 C22 24 40 22 50 32 C60 22 78 24 82 38 C86 52 76 72 50 88Z" fill={PAL.strawberry} {...OUTLINE} />
-      <path d="M36 22 L44 30 L50 24 L56 30 L64 22 L60 34 L40 34Z" fill={PAL.bamboo} {...OUTLINE} stroke-width={1.8} />
+      <path d={STRAWBERRY_PATH} fill={PAL.strawberry} {...OUTLINE} />
+      <path d={STRAWBERRY_LEAF_PATH} fill={PAL.bamboo} {...OUTLINE} stroke-width={1.8} />
       {seeds.map(([x, y], i) => <ellipse key={i} cx={x} cy={y} rx={1.8} ry={2.6} fill={PAL.goldLight} />)}
     </ItemSvg>
   );
@@ -67,8 +68,7 @@ export function Honey({ size }: { size: number }): JSX.Element {
 export function Mushroom({ size }: { size: number }): JSX.Element {
   return (
     <ItemSvg size={size}>
-      <path d="M12 52 Q12 18 50 18 Q88 18 88 52 Q50 60 12 52Z" fill={PAL.pinkDeep} {...OUTLINE} />
-      <rect x={38} y={52} width={24} height={34} rx={8} fill={PAL.creamLight} {...OUTLINE} />
+      <MushroomBody cap={PAL.pinkDeep} stem={PAL.creamLight} />
       <circle cx={30} cy={36} r={5} fill={PAL.white} />
       <circle cx={56} cy={30} r={4} fill={PAL.white} />
       <circle cx={70} cy={44} r={4.5} fill={PAL.white} />
