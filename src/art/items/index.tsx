@@ -1,6 +1,13 @@
 import type { ComponentType } from 'preact';
 import { BambooPendant, NestArt, LowTableArt, CushionArt } from './starter-art';
 import {
+  MianhuaMailbox, MianhuaLetterCabinet, MianhuaCart, JuziCandyJar, JuziCounter, JuziFoxLantern,
+  ManmanStone, ManmanStoryShelf, ManmanTent, GuluWorkbench, GuluGearClock, GuluRobot,
+} from './friendFurniture';
+import {
+  PendantShell, PendantMushroom, PendantSnowflake, PendantCloud, PendantStar, PendantMoonBell, PendantHeart,
+} from './pendants';
+import {
   BambooShelf, PlantPot, Lantern, ToyBox, Rug, BambooChair, Lamp, Cabinet, SnackBasket, BambooFence,
   MushroomStool, FlowerVase, Sofa, Bed, Swing, ReadingNook, Bookshelf, Clock, Hammock, Beanbag, Fountain,
 } from './furniture';
@@ -32,4 +39,23 @@ export const ITEM_ART: Record<string, ComponentType<{ size: number }>> = {
   'furn-hammock': Hammock,
   'furn-beanbag': Beanbag,
   'furn-fountain': Fountain,
+  'furn-mianhua-1': MianhuaMailbox,
+  'furn-mianhua-2': MianhuaLetterCabinet,
+  'furn-mianhua-3': MianhuaCart,
+  'furn-juzi-1': JuziCandyJar,
+  'furn-juzi-2': JuziCounter,
+  'furn-juzi-3': JuziFoxLantern,
+  'furn-manman-1': ManmanStone,
+  'furn-manman-2': ManmanStoryShelf,
+  'furn-manman-3': ManmanTent,
+  'furn-gulu-1': GuluWorkbench,
+  'furn-gulu-2': GuluGearClock,
+  'furn-gulu-3': GuluRobot,
+  'pendant-shell': PendantShell,
+  'pendant-mushroom': PendantMushroom,
+  'pendant-snowflake': PendantSnowflake,
+  'pendant-cloud': PendantCloud,
+  'pendant-star': PendantStar,
+  'pendant-moon-bell': PendantMoonBell,
+  'pendant-heart': PendantHeart,
 };
