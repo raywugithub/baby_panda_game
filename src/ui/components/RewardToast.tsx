@@ -24,7 +24,7 @@ function textsOf(e: GameEvent): string[] {
       return out;
     }
     case 'markUp':
-      return ['成長刻度 +1'];
+      return [`成長刻度 +${e.mark}`];
     case 'stageUp':
       return [`升上階段 ${e.stage}：${e.title}`];
     case 'slotUnlocked':
@@ -47,9 +47,12 @@ export function RewardToast() {
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
-    const mine = queue.filter(isToastable);
+    // Read the live queue here, not the render-time snapshot, so events pushed
+    // between render and this effect are not overwritten by the write-back.
+    const current = eventQueue.value;
+    const mine = current.filter(isToastable);
     if (mine.length === 0) return;
-    eventQueue.value = queue.filter((e) => !isToastable(e));
+    eventQueue.value = current.filter((e) => !isToastable(e));
     const fresh: Toast[] = [];
     for (const e of mine) for (const text of textsOf(e)) fresh.push({ id: nextId++, text });
     if (fresh.length === 0) return;

@@ -17,7 +17,7 @@ describe('RewardToast', () => {
     });
     expect(screen.getByText('+2 星砂')).toBeTruthy();
     expect(screen.getByText('+15 元氣')).toBeTruthy();
-    expect(screen.getByText('成長刻度 +1')).toBeTruthy();
+    expect(screen.getByText('成長刻度 +3')).toBeTruthy();
     expect(eventQueue.value).toEqual([{ type: 'storyBeat', beatId: 'prologue' }]);
   });
   it('升階文字包含階段與稱號', async () => {
