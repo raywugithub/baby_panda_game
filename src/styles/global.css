@@ -403,3 +403,18 @@ button {
   min-height: 44px;
   font-weight: 700;
 }
+
+/* Task 23：抱抱無效時的害羞彈跳（尊重 reduced motion）。 */
+.shy-bounce {
+  animation: shy-bounce 0.6s ease-in-out;
+}
+
+@keyframes shy-bounce {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px) rotate(-3deg); }
+  75% { transform: translateX(4px) rotate(3deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shy-bounce { animation: none; }
+}

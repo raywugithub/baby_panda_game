@@ -13,12 +13,18 @@ import { DiaryPanel } from '../components/DiaryPanel';
 import { Mailbox } from '../components/Mailbox';
 import { InstallHint } from '../components/InstallHint';
 import { UpdateBanner } from '../components/UpdateBanner';
+import { FeedTray } from '../components/care/FeedTray';
+import { BathArea } from '../components/care/BathArea';
+import { PlayMenu } from '../components/care/PlayMenu';
+import { HugButton } from '../components/care/HugButton';
+import { REACTION_POSE } from '../../panda/reactions';
 import type { GameEvent } from '../../core/events';
 
 export { idlePoseFor };
 
 const AWAKE_MS = 30 * 60_000; // 契約 10.6：點醒睡覺中的熊貓後 30 分鐘內不睡
 const CELEBRATE_MS = 2000; // C23：升階時慶祝姿勢約 2 秒
+const REACTION_MS = 2000; // 餵食反應姿勢持續 2 秒
 const KITCHEN_STAGE = 2;
 
 type Panel = 'feed' | 'bath' | 'play' | 'kitchen';
@@ -33,6 +39,8 @@ export function Home() {
   const mood = moodOf(s, now(), justOpenedAfterMs.value);
   const [celebrating, setCelebrating] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
+  const [mouth, setMouth] = useState<{ x: number; y: number } | null>(null);
+  const [reaction, setReaction] = useState<{ pose: PandaPose } | null>(null);
   const [mailboxOpen, setMailboxOpen] = useState(false);
   const pandaBox = useRef<HTMLDivElement>(null);
 
@@ -52,6 +60,22 @@ export function Home() {
     return () => clearTimeout(t);
   }, [celebrating]);
 
+  useEffect(() => {
+    if (!reaction) return;
+    const t = setTimeout(() => setReaction(null), REACTION_MS);
+    return () => clearTimeout(t);
+  }, [reaction]);
+
+  /** 餵食面板需要嘴巴的螢幕座標（C12）；沒有嘴巴元素時退回熊貓區塊中心。 */
+  function togglePanel(p: Panel) {
+    if (p === 'feed' && panel !== 'feed') {
+      const mouthEl = pandaBox.current?.querySelector('[data-testid="panda-mouth"]');
+      const r = (mouthEl ?? pandaBox.current)?.getBoundingClientRect();
+      setMouth(r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: 0, y: 0 });
+    }
+    setPanel(cur => (cur === p ? null : p));
+  }
+
   function onPoke() {
     const cur = game.value;
     const t = now();
@@ -61,7 +85,7 @@ export function Home() {
     justOpenedAfterMs.value = null;
   }
 
-  const pose = (celebrating ? 'celebrate' : idlePoseFor(mood)) as PandaPose;
+  const pose = (celebrating ? 'celebrate' : reaction ? reaction.pose : idlePoseFor(mood)) as PandaPose;
   const { outfit, pendants } = s.equipped;
 
   return (
@@ -85,18 +109,17 @@ export function Home() {
       <RoomView />
 
       <div class="care-row">
-        <button type="button" data-testid="care-feed" onClick={() => setPanel(p => (p === 'feed' ? null : 'feed'))}>🍙 餵食</button>
-        <button type="button" data-testid="care-bath" onClick={() => setPanel(p => (p === 'bath' ? null : 'bath'))}>🫧 洗澡</button>
-        <button type="button" data-testid="care-play" onClick={() => setPanel(p => (p === 'play' ? null : 'play'))}>🧸 玩耍</button>
-        {/* 抱抱按鈕由 Task 23 的 HugButton 取代此佔位（C12）。 */}
-        <button type="button" data-testid="care-hug" disabled>🤗 抱抱</button>
+        <button type="button" data-testid="care-feed" onClick={() => togglePanel('feed')}>🍙 餵食</button>
+        <button type="button" data-testid="care-bath" onClick={() => togglePanel('bath')}>🫧 洗澡</button>
+        <button type="button" data-testid="care-play" onClick={() => togglePanel('play')}>🧸 玩耍</button>
+        <HugButton />
       </div>
       <div class="kitchen-row">
         <button
           type="button"
           aria-label="料理台"
           disabled={stage < KITCHEN_STAGE}
-          onClick={() => setPanel(p => (p === 'kitchen' ? null : 'kitchen'))}
+          onClick={() => togglePanel('kitchen')}
         >
           🍳 料理台
         </button>
@@ -105,7 +128,12 @@ export function Home() {
       {panel ? (
         <section class="card care-panel" data-testid="care-panel">
           <h3>{PANEL_LABEL[panel]}</h3>
-          <p>即將推出</p>
+          {panel === 'feed' && mouth ? (
+            <FeedTray mouth={mouth} onFed={r => setReaction({ pose: REACTION_POSE[r] })} />
+          ) : null}
+          {panel === 'bath' ? <BathArea /> : null}
+          {panel === 'play' ? <PlayMenu /> : null}
+          {panel === 'kitchen' ? <p>即將推出</p> : null}
         </section>
       ) : null}
 
