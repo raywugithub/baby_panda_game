@@ -56,6 +56,48 @@ export function fitParticleCanvas(): void {
   if (canvas) sizeCanvas(canvas);
 }
 
+const BUBBLE_OUTLINE = '#3d8fd1';
+
+/** 依種類畫出形狀：愛心、泡泡（圓環）、星星、水滴。 */
+function drawShape(g: CanvasRenderingContext2D, kind: ParticleKind, x: number, y: number): void {
+  const s = 5;
+  g.fillStyle = COLORS[kind];
+  g.beginPath();
+  switch (kind) {
+    case 'hearts':
+      g.moveTo(x, y + s * 0.8);
+      g.bezierCurveTo(x - s * 1.4, y, x - s * 0.9, y - s * 1.2, x, y - s * 0.4);
+      g.bezierCurveTo(x + s * 0.9, y - s * 1.2, x + s * 1.4, y, x, y + s * 0.8);
+      g.fill();
+      break;
+    case 'bubbles':
+      g.arc(x, y, s, 0, Math.PI * 2);
+      g.fill();
+      g.lineWidth = 1.2;
+      g.strokeStyle = BUBBLE_OUTLINE;
+      g.stroke();
+      break;
+    case 'stars':
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? s * 1.2 : s * 0.5;
+        const a = -Math.PI / 2 + (i * Math.PI) / 5;
+        const px = x + Math.cos(a) * r;
+        const py = y + Math.sin(a) * r;
+        if (i === 0) g.moveTo(px, py);
+        else g.lineTo(px, py);
+      }
+      g.closePath();
+      g.fill();
+      break;
+    case 'water':
+      g.moveTo(x, y - s * 1.2);
+      g.quadraticCurveTo(x + s, y + s * 0.2, x, y + s);
+      g.quadraticCurveTo(x - s, y + s * 0.2, x, y - s * 1.2);
+      g.fill();
+      break;
+  }
+}
+
 function step(g: CanvasRenderingContext2D): void {
   const canvas = g.canvas;
   const dpr = devicePixelCap();
@@ -75,10 +117,7 @@ function step(g: CanvasRenderingContext2D): void {
       continue;
     }
     g.globalAlpha = 1 - p.age / LIFE_FRAMES;
-    g.fillStyle = COLORS[p.kind];
-    g.beginPath();
-    g.arc(p.x, p.y, 4, 0, Math.PI * 2);
-    g.fill();
+    drawShape(g, p.kind, p.x, p.y);
   }
   g.globalAlpha = 1;
   rafId = live.length > 0 ? requestAnimationFrame(() => step(g)) : 0;
