@@ -85,7 +85,7 @@ export function PlayMenu() {
   }
 
   return (
-    <div>
+    <div style={{ touchAction: 'none' }}>
       {active === null ? (
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button type="button" onClick={() => { setMessage(null); setActive('ball'); }}>丟球</button>
