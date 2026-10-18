@@ -35,18 +35,28 @@ test('版面沒有水平捲動', async ({ page }) => {
 
 test('家畫面：安裝提示展開或收起時，照顧按鈕都沒有被蓋住', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-webkit', '只在 iPhone WebKit 驗證版面遮擋');
-  await seedSave(page);
+  // growthXp 275 = 第 5 格 → 階段 2，料理台才會啟用（階段 1 時按鈕是 disabled，trial click 會等不到）。
+  await seedSave(page, { growthXp: 275 });
+  // 有進度的 iPhone 會先跳「把熊貓搬到主畫面」，先標記為已關閉，讓測試停在家畫面。
+  await page.addInitScript(() => {
+    try { localStorage.setItem('panda.moveOutDismissed', '1'); } catch { /* 私密視窗略過 */ }
+  });
   await page.goto('./');
   const careButtons = ['care-hug', 'care-feed', 'care-bath', 'care-play'];
+  const kitchen = page.getByRole('button', { name: '料理台' });
   await expect(page.getByRole('button', { name: '收起' })).toBeVisible();
   for (const id of careButtons) {
     await expect(page.getByTestId(id)).toBeVisible();
     await page.getByTestId(id).click({ trial: true });
   }
+  await expect(kitchen).toBeVisible();
+  await kitchen.click({ trial: true });
   await page.getByRole('button', { name: '收起' }).click();
   await expect(page.getByRole('button', { name: '安裝提示' })).toBeVisible();
   for (const id of careButtons) {
     await expect(page.getByTestId(id)).toBeVisible();
     await page.getByTestId(id).click({ trial: true });
   }
+  await expect(kitchen).toBeVisible();
+  await kitchen.click({ trial: true });
 });

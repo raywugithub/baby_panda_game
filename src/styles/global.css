@@ -267,9 +267,11 @@ button {
   pointer-events: none;
 }
 
+/* 熊貓 svg 是正方形框（viewBox 200×240 垂直撐滿），可見熊貓高度受房間高度限制：
+   房間改為 6:5（約 298px 高），svg 框放大到房間寬度的 104%，stage 1 的可見熊貓約為視窗寬的 51%，腳底貼住地板。 */
 .home-panda .panda-tap-zone {
   position: relative;
-  width: 60%;
+  width: 104%;
   pointer-events: auto;
 }
 
@@ -311,7 +313,7 @@ button {
 .room {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 6 / 5;
   overflow: hidden;
   border-radius: 12px;
 }
