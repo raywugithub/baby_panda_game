@@ -11,6 +11,12 @@ describe('particles', () => {
     expect(PARTICLE_CAP).toBe(60);
     vi.unstubAllGlobals();
   });
+  it('小數 count 向下取整，仍不超過上限', () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false }));
+    burst('bubbles', 0, 0, 60.5);
+    expect(particleCount()).toBe(60);
+    vi.unstubAllGlobals();
+  });
   it('減少動態時不產生粒子', () => {
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
     burst('stars', 0, 0, 10);

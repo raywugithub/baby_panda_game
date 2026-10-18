@@ -44,7 +44,8 @@ export function unlockAudio(): void {
   resumeCtx();
   if (unlockRegistered || typeof window === 'undefined') return;
   unlockRegistered = true;
-  window.addEventListener('pointerdown', resumeCtx, { once: true, capture: true });
+  // 持續監聽：iOS 可能在背景或來電後再次暫停 context，之後每次點擊都要能恢復。
+  window.addEventListener('pointerdown', resumeCtx, { capture: true });
 }
 
 export function setSoundEnabled(on: boolean): void {

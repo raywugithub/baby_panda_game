@@ -67,7 +67,7 @@ function step(g: CanvasRenderingContext2D): void {
 
 export function burst(kind: ParticleKind, x: number, y: number, count = 12): void {
   if (reducedMotion()) return;
-  const n = Math.max(0, Math.min(count, PARTICLE_CAP - live.length));
+  const n = Math.max(0, Math.min(Math.floor(count), PARTICLE_CAP - live.length));
   const batch: Particle[] = [];
   for (let i = 0; i < n; i++) {
     const angle = (Math.PI * 2 * i) / Math.max(n, 1);

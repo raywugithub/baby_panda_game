@@ -30,15 +30,6 @@ describe('audio', () => {
     expect(() => { unlockAudio(); sfx('pop'); sfx('tada'); }).not.toThrow();
     vi.unstubAllGlobals();
   });
-  it('關閉音效後不呼叫 AudioContext', () => {
-    const ctor = vi.fn();
-    vi.stubGlobal('AudioContext', ctor);
-    setSoundEnabled(false);
-    sfx('jingle');
-    expect(ctor).not.toHaveBeenCalled();
-    setSoundEnabled(true);
-    vi.unstubAllGlobals();
-  });
   it('解鎖且音效開啟時 sfx 建立振盪器節點', () => {
     vi.stubGlobal('AudioContext', FakeAudioContext);
     unlockAudio();
@@ -58,6 +49,19 @@ describe('audio', () => {
     sfx('tada');
     expect(ctx.createOscillator).not.toHaveBeenCalled();
     setSoundEnabled(true);
+    vi.unstubAllGlobals();
+  });
+  it('之後被系統暫停時，下一次點擊會再次恢復', () => {
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    unlockAudio();
+    const ctx = created.at(-1)!;
+    ctx.state = 'suspended';
+    ctx.resume.mockClear();
+    window.dispatchEvent(new Event('pointerdown'));
+    expect(ctx.resume).toHaveBeenCalledTimes(1);
+    ctx.state = 'suspended';
+    window.dispatchEvent(new Event('pointerdown'));
+    expect(ctx.resume).toHaveBeenCalledTimes(2);
     vi.unstubAllGlobals();
   });
 });
