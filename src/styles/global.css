@@ -783,3 +783,120 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .box-scene { animation: none; }
 }
+
+/* 衣櫃 */
+.closet {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.closet-segments {
+  display: flex;
+  gap: 8px;
+}
+
+.closet-segments button,
+.closet-presets button,
+.closet-list button {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--fur);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
+.closet-segments button[aria-pressed="true"] {
+  background: #8A5A24;
+  color: #ffffff;
+}
+
+.closet-dress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.closet-preview {
+  display: flex;
+  justify-content: center;
+}
+
+.closet-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.closet-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 72px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--fur);
+  color: var(--ink);
+  font: inherit;
+}
+
+.closet-tile[aria-pressed="true"] {
+  outline: 2px solid var(--amber);
+}
+
+.closet-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+}
+
+.closet-tile-icon:empty {
+  border: 2px dashed var(--fur-shade);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.closet-tile-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.closet-tile-status {
+  font-size: 12px;
+  color: #6B5F50;
+}
+
+.closet-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.closet-list button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.closet-list button[aria-pressed="true"] {
+  outline: 2px solid var(--amber);
+}
+
+.closet-list button:disabled {
+  opacity: 0.5;
+}
+
+.closet-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
