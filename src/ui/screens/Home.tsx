@@ -6,6 +6,7 @@ import { currentStage } from '../../core/growth';
 import { now, randomSeed } from '../../platform/clock';
 import { burst } from '../../platform/particles';
 import { game, commit, eventQueue, justOpenedAfterMs } from '../store';
+import { openOverlay } from '../nav';
 import { PandaTapZone } from '../components/Surprises';
 import { TopBar } from '../components/TopBar';
 import { Needs } from '../components/Needs';
@@ -265,6 +266,9 @@ export function Home({ tutorialHint }: HomeProps = {}) {
           🍳 料理台
         </button>
         {stage < KITCHEN_STAGE ? <span class="hint">長大一點就能用</span> : null}
+      </div>
+      <div class="photo-entry">
+        <button type="button" data-testid="photo-open" onClick={() => openOverlay({ kind: 'photo', context: 'home' })}>📷 拍照</button>
       </div>
       {panel ? (
         <section class="card care-panel" data-testid="care-panel">

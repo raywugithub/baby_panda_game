@@ -1106,3 +1106,104 @@ button {
   font-weight: 700;
   color: #8A5A24;
 }
+
+/* 拍照模式（Task 25）：覆蓋層內所有按鈕觸控區至少 44px，不產生水平捲動。 */
+.photo-overlay {
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.photo-stage {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.photo-stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+.photo-row,
+.photo-tray,
+.photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.photo-tray {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.photo-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.photo-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.photo-overlay button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--ink);
+  background: #fffaf2;
+  color: var(--ink);
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.photo-overlay button[aria-pressed="true"] {
+  background: var(--ink);
+  color: #fffaf2;
+}
+
+.photo-overlay button:disabled {
+  opacity: 0.5;
+}
+
+.photo-toast {
+  text-align: center;
+  margin: 0;
+  font-size: 16px;
+}
+
+.photo-modal {
+  padding: 12px;
+  border-radius: 12px;
+  background: #fffaf2;
+  border: 2px solid var(--ink);
+}
+
+.photo-modal p {
+  margin: 0 0 8px;
+}
+
+.photo-entry {
+  display: flex;
+  justify-content: center;
+  padding: 4px 16px;
+}
+
+.photo-entry button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 4px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--ink);
+  background: #fffaf2;
+  color: var(--ink);
+  font-size: 16px;
+}
