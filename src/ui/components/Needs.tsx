@@ -7,16 +7,17 @@ const LOW = 50;
 /** 單一指標條：數值與寬度都以 signal 精細訂閱，不重建整個畫面。 */
 function Gauge({ label, value, iconKey }: { label: string; value: ReadonlySignal<number>; iconKey?: NeedKey }) {
   const low = useComputed(() => value.value < LOW);
+  const shown = useComputed(() => Math.round(value.value));
   return (
     <div class="gauge">
       <span class="gauge-label">
         {label}
         {iconKey && low.value ? <span data-testid={`need-icon-${iconKey}`} aria-hidden="true"> 🥺</span> : null}
       </span>
-      <div class="meter" role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={value}>
+      <div class="meter" role="meter" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={shown}>
         <i style={{ width: `${value.value}%` }} />
       </div>
-      <span class="gauge-value">{value}</span>
+      <span class="gauge-value">{shown}</span>
     </div>
   );
 }

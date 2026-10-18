@@ -65,6 +65,7 @@ export function Panda({ pose, stage, outfit, pendants, chainLinks, size = 240, o
     >
       <ShineDefs />
       <g data-part="root" transform={`translate(100 240) scale(${rootScale}) translate(-100 -240)`}>
+        {tier >= 1 ? <Halo tier={tier} /> : null}
         <g data-part="body" data-testid="panda-body" transform={moveTransform(spec.body, PIVOTS.body)}>
           <Tail transform={moveTransform(spec.tail, PIVOTS.tail)} />
           <Leg side="L" transform={moveTransform(spec.legL, PIVOTS.legL)} />
@@ -92,7 +93,6 @@ export function Panda({ pose, stage, outfit, pendants, chainLinks, size = 240, o
           </g>
           <Collar links={chainLinks} thickness={chainThickness(chainLinks)} />
         </g>
-        {tier >= 1 ? <Halo tier={tier} /> : null}
         <OutfitLayers outfit={outfit} pendants={pendants} />
       </g>
     </svg>

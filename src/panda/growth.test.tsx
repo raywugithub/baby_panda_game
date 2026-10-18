@@ -23,6 +23,35 @@ describe('成長外觀', () => {
   });
 });
 
+describe('光環與光澤不遮蓋熊貓', () => {
+  it.each([1, 4])('階段 %i（階層 0）沒有光環', (st) => {
+    expect(P({ stage: st }).container.querySelector('[data-part="halo"]')).toBeNull();
+  });
+  it.each([5, 10, 20])('階段 %i：光環在本體之前繪製（DOM 順序早於 body）', (st) => {
+    const { container } = P({ stage: st });
+    const halo = container.querySelector('[data-part="halo"]')!;
+    const body = container.querySelector('[data-testid="panda-body"]')!;
+    expect(halo).not.toBeNull();
+    expect(halo.compareDocumentPosition(body) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+  it('光環不使用實心半透明圓覆蓋身體（填色為放射光暈）', () => {
+    const halo = P({ stage: 5 }).container.querySelector('[data-part="halo"] circle')!;
+    expect(halo.getAttribute('fill')).toBe('url(#halo-glow)');
+    expect(halo.getAttribute('stroke')).toBeNull();
+  });
+  it('毛色光澤為白色提亮，透明度隨階層上升至 3 後固定', () => {
+    const shineOpacity = (st: number) =>
+      Number(P({ stage: st }).container.querySelector('[data-part="body"] ellipse[fill="url(#fur-shine)"]')!.getAttribute('opacity'));
+    expect(shineOpacity(1)).toBe(0);
+    expect(shineOpacity(5)).toBeCloseTo(0.15);
+    expect(shineOpacity(10)).toBeCloseTo(0.3);
+    expect(shineOpacity(15)).toBeCloseTo(0.45);
+    expect(shineOpacity(20)).toBeCloseTo(0.45);
+    const stops = P({ stage: 5 }).container.querySelectorAll('#fur-shine stop');
+    for (const stop of Array.from(stops)) expect(stop.getAttribute('style')).toContain('rgb(255, 255, 255)');
+  });
+});
+
 describe('項圈鏈', () => {
   it('最多畫 24 環，超過以 ×N 表示', () => {
     expect(P({ chainLinks: 0 }).container.querySelectorAll('[data-part="link"]').length).toBe(0);

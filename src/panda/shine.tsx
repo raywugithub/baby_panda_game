@@ -14,21 +14,15 @@ const HALO_CX = 100;
 const HALO_CY = 120;
 const HALO_R = 100;
 
-/** 光環：半透明圓與 4 + 2 × tier 個星點，角度均分於光環上。 */
+/**
+ * 光環：柔和的放射光暈 + 4 + 2 × tier 個星點，角度均分於光環上。
+ * 必須畫在熊貓本體之前（見 Panda.tsx），因此只會露出本體外圍，不會蓋住身體或臉。
+ */
 export function Halo({ tier }: { tier: number }): JSX.Element {
   const n = 4 + 2 * tier;
   return (
     <g data-part="halo" pointer-events="none">
-      <circle
-        cx={HALO_CX}
-        cy={HALO_CY}
-        r={HALO_R}
-        fill="var(--chain-light)"
-        fill-opacity={0.18}
-        stroke="var(--chain-light)"
-        stroke-opacity={0.6}
-        stroke-width={2}
-      />
+      <circle cx={HALO_CX} cy={HALO_CY} r={HALO_R} fill="url(#halo-glow)" />
       {Array.from({ length: n }, (_, i) => {
         const a = (i * 2 * Math.PI) / n;
         const x = HALO_CX + (HALO_R - 8) * Math.cos(a);
@@ -48,19 +42,23 @@ export function Halo({ tier }: { tier: number }): JSX.Element {
   );
 }
 
-/** 毛色漸層（只定義一次，由 Panda 放在 defs 中）。 */
+/** 毛色光澤與光環漸層（只定義一次，由 Panda 放在 defs 中）。 */
 export function ShineDefs(): JSX.Element {
   return (
     <defs>
       <linearGradient id="fur-shine" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" style={{ stopColor: 'var(--chain-light)', stopOpacity: 1 }} />
-        <stop offset="1" style={{ stopColor: 'var(--chain-light)', stopOpacity: 0 }} />
+        <stop offset="0" style={{ stopColor: '#FFFFFF', stopOpacity: 1 }} />
+        <stop offset="1" style={{ stopColor: '#FFFFFF', stopOpacity: 0 }} />
       </linearGradient>
+      <radialGradient id="halo-glow">
+        <stop offset="0.6" style={{ stopColor: 'var(--chain-light)', stopOpacity: 0 }} />
+        <stop offset="1" style={{ stopColor: 'var(--chain-light)', stopOpacity: 0.35 }} />
+      </radialGradient>
     </defs>
   );
 }
 
-/** 毛色光澤覆蓋層；透明度 = min(tier, 3) × 0.15。 */
+/** 毛色光澤覆蓋層（白色柔光，只會提亮）；透明度 = min(tier, 3) × 0.15。 */
 export function FurShine({ tier, cx, cy, rx, ry }: {
   tier: number; cx: number; cy: number; rx: number; ry: number;
 }): JSX.Element {
