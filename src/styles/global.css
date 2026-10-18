@@ -291,6 +291,11 @@ button {
   height: auto;
 }
 
+/* stage 4 起熊貓放大到 1.05 倍，頭與耳朵會超出房間上緣；縮小熊貓寬度到 80%，讓頭頂留在框內、腳仍貼住地板。 */
+.room-grown .home-panda .panda-tap-zone {
+  width: 80%;
+}
+
 /* 戳戳「假裝很忙」浮在熊貓頭上方，不撐開房間。 */
 .home-panda .surprise-msg {
   position: absolute;

@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/preact';
 import { createInitialState } from '../../core/state';
 import { game, readOnly, eventQueue } from '../store';
 import { Home, idlePoseFor } from './Home';
+import { RoomView } from '../components/RoomView';
 import { overlay } from '../nav';
 import { now } from '../../platform/clock';
 
@@ -139,5 +140,13 @@ describe('Home 版面', () => {
     render(<Home />);
     const room = document.querySelector('.room')!;
     expect(room.querySelector('.home-panda svg[data-pose]')).not.toBeNull();
+  });
+
+  it('階段 4 起房間加上 room-grown，讓放大的熊貓縮小以保留頭頂；階段 3 以前不加', () => {
+    const { unmount } = render(<RoomView stage={3} />);
+    expect(document.querySelector('.room')!.classList.contains('room-grown')).toBe(false);
+    unmount();
+    render(<RoomView stage={4} />);
+    expect(document.querySelector('.room')!.classList.contains('room-grown')).toBe(true);
   });
 });

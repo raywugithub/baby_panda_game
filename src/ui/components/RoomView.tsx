@@ -47,13 +47,17 @@ function PlacedView({ item }: { item: PlacedItem }): JSX.Element {
   );
 }
 
-/** 房間背景（牆與地板）；children 疊在房間內，例如站在地板上的熊貓。 */
-export function RoomView({ children }: { children?: ComponentChildren }): JSX.Element {
+/**
+ * 房間背景（牆與地板）；children 疊在房間內，例如站在地板上的熊貓。
+ * stage 4 起熊貓以 1.05 倍縮放，身高超過房間高度，房間加上 room-grown 讓熊貓縮小以保留頭與耳朵。
+ */
+export function RoomView({ children, stage }: { children?: ComponentChildren; stage?: number }): JSX.Element {
   const room = game.value.rooms.living;
   const wall = WALL_COLOR[room.wall] ?? 'var(--fur-shade)';
   const floor = FLOOR_COLOR[room.floor] ?? 'var(--fur)';
+  const grown = stage !== undefined && stage >= 4;
   return (
-    <div class="room" role="img" aria-label="客廳">
+    <div class={grown ? 'room room-grown' : 'room'} role="img" aria-label="客廳">
       <div class="room-wall" style={{ background: wall }} />
       <div class="room-floor" style={{ background: floor }} />
       {room.placed.map(p => <PlacedView key={p.uid} item={p} />)}

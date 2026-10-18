@@ -212,7 +212,7 @@ export function Home({ tutorialHint }: HomeProps = {}) {
       <InstallHint />
       <Needs />
 
-      <RoomView>
+      <RoomView stage={stage}>
         <div class={`home-panda${transientPose === 'shy' ? ' shy-ears' : ''}`} ref={pandaBox}>
           <PandaTapZone busy={transientPose === 'busyBook'} onPointerDown={onPandaPointerDown}>
             <Panda
