@@ -12,6 +12,11 @@ import {
   Scarf, Vest, Raincoat, Hanfu, BambooFan, Balloon, Umbrella, BambooFlute, TailBow, Ribbon, FluffyTail, StarTail,
 } from './outfits';
 import {
+  WallDefault, WallBamboo, WallCloud, WallStripe, WallStarnight, WallRainbow,
+  FloorDefault, FloorWood, FloorMoss, FloorTatami, FloorCotton, FloorStarfield,
+} from './decor';
+import { BambooShoot, Strawberry, RiceFlour, RedBean, Honey, Mushroom } from './food';
+import {
   BambooShelf, PlantPot, Lantern, ToyBox, Rug, BambooChair, Lamp, Cabinet, SnackBasket, BambooFence,
   MushroomStool, FlowerVase, Sofa, Bed, Swing, ReadingNook, Bookshelf, Clock, Hammock, Beanbag, Fountain,
 } from './furniture';
@@ -82,4 +87,22 @@ export const ITEM_ART: Record<string, ComponentType<{ size: number }>> = {
   'outfit-tail-ribbon': Ribbon,
   'outfit-tail-fluffy': FluffyTail,
   'outfit-tail-star': StarTail,
+  'wall-default': WallDefault,
+  'wall-bamboo': WallBamboo,
+  'wall-cloud': WallCloud,
+  'wall-stripe': WallStripe,
+  'wall-starnight': WallStarnight,
+  'wall-rainbow': WallRainbow,
+  'floor-default': FloorDefault,
+  'floor-wood': FloorWood,
+  'floor-moss': FloorMoss,
+  'floor-tatami': FloorTatami,
+  'floor-cotton': FloorCotton,
+  'floor-starfield': FloorStarfield,
+  'ing-bamboo-shoot': BambooShoot,
+  'ing-strawberry': Strawberry,
+  'ing-rice-flour': RiceFlour,
+  'ing-red-bean': RedBean,
+  'ing-honey': Honey,
+  'ing-mushroom': Mushroom,
 };
