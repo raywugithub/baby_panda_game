@@ -4,6 +4,8 @@ import { FURNITURE_ITEMS } from './furniture';
 import { DECOR_ITEMS } from './decor';
 import { OUTFIT_ITEMS } from './outfits';
 import { PENDANT_ITEMS } from './pendants';
+import { ITEMS } from './index';
+import { FRIEND_FURNITURE } from '../friendFurniture';
 
 const all = [...STARTER_ITEMS, ...FURNITURE_ITEMS, ...DECOR_ITEMS, ...OUTFIT_ITEMS, ...PENDANT_ITEMS];
 
@@ -47,5 +49,44 @@ describe('task 1 item definitions', () => {
     const rest = all.filter((i) => !STARTER_ITEMS.includes(i));
     expect(rest.every((i) => i.hint.trim().length > 0)).toBe(true);
     expect(new Set(all.map((i) => i.id)).size).toBe(all.length);
+  });
+});
+
+describe('task 2 merged catalog', () => {
+  const count = (c: string) => ITEMS.filter((i) => i.category === c).length;
+  it('totals per category', () => {
+    expect(count('furniture')).toBe(36);   // 24 living incl. 3 starter + 12 friend
+    expect(count('wall')).toBe(6);
+    expect(count('floor')).toBe(6);
+    expect(count('outfit')).toBe(20);
+    expect(count('pendant')).toBe(8);
+    expect(count('ingredient')).toBe(6);
+    expect(count('sticker')).toBe(24);
+    expect(count('frame')).toBe(6);
+    expect(ITEMS.length).toBe(112);
+  });
+  it('ids are unique and prefixed by category', () => {
+    expect(new Set(ITEMS.map((i) => i.id)).size).toBe(112);
+    const prefix: Record<string, string> = { furniture: 'furn-', wall: 'wall-', floor: 'floor-', outfit: 'outfit-', pendant: 'pendant-', ingredient: 'ing-', sticker: 'sticker-', frame: 'frame-' };
+    for (const i of ITEMS) expect(i.id.startsWith(prefix[i.category])).toBe(true);
+  });
+  it('gift pool size per rarity is 37 common, 18 shiny, 12 rainbow', () => {
+    // Breakdown (common/shiny/rainbow): starter 3/0/0 + living furniture 12/6/3 + decor 6/2/2
+    // + outfits 10/5/5 + pendants 2/3/2 + ingredients 4/2/0 = 37/18/12 (contract §10.1, §10.2)
+    const pool = ITEMS.filter((i) => i.inGiftPool);
+    expect(pool.filter((i) => i.rarity === 'common').length).toBe(37);
+    expect(pool.filter((i) => i.rarity === 'shiny').length).toBe(18);
+    expect(pool.filter((i) => i.rarity === 'rainbow').length).toBe(12);
+  });
+  it('friend furniture, stickers and frames are never in the pool', () => {
+    for (const i of ITEMS.filter((x) => x.id.startsWith('furn-mianhua') || x.id.startsWith('furn-juzi') || x.id.startsWith('furn-manman') || x.id.startsWith('furn-gulu') || x.category === 'sticker' || x.category === 'frame')) {
+      expect(i.inGiftPool).toBe(false);
+    }
+  });
+  it('friend furniture table has 12 entries, levels 3/6/10 per friend', () => {
+    expect(FRIEND_FURNITURE.length).toBe(12);
+    for (const f of ['mianhua', 'juzi', 'manman', 'gulu']) {
+      expect(FRIEND_FURNITURE.filter((x) => x.friendId === f).map((x) => x.level)).toEqual([3, 6, 10]);
+    }
   });
 });

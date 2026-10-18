@@ -119,11 +119,11 @@ describe('Home 互動細節', () => {
     expect(document.querySelector('svg[data-pose]')!.getAttribute('data-pose')).toBe('celebrate');
     expect(eventQueue.value).toHaveLength(1);
   });
-  it('沒有貼紙時不顯示「貼貼紙」按鈕', () => {
+  it('貼紙清單有內容時顯示「貼貼紙」按鈕', () => {
     game.value = { ...game.value, diary: [{ date: '2026-10-18', text: '今天很開心', sticker: null }] };
     render(<Home />);
     expect(screen.getByText('今天很開心')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: '貼貼紙' })).toBeNull();
+    expect(screen.getByRole('button', { name: '貼貼紙' })).toBeTruthy();
   });
   it('打開信件後標記為已讀', () => {
     game.value = { ...game.value, letters: [{ id: 'l1', date: '2026-10-18', from: 'juzi', text: '嗨，我是橘子', read: false }] };

@@ -48,11 +48,11 @@ describe('內容資料完整性', () => {
     expect(INGREDIENTS.filter(i => i.rarity === 'common')).toHaveLength(4);
     expect(INGREDIENTS.filter(i => i.rarity === 'shiny').map(i => i.id).sort()).toEqual(['ing-honey', 'ing-mushroom']);
   });
-  it('初始物品的禮盒池旗標：家具為 true，牆紙、地板、墜飾為 false，且 A 沒有貼紙', () => {
+  it('初始物品的禮盒池旗標：家具為 true，牆紙、地板、墜飾為 false，貼紙由 C 提供 24 張', () => {
     const pool = (id: string) => ITEM_BY_ID[id].inGiftPool;
     expect(['furn-nest', 'furn-low-table', 'furn-cushion'].map(pool)).toEqual([true, true, true]);
     expect(['wall-default', 'floor-default', 'pendant-bamboo'].map(pool)).toEqual([false, false, false]);
-    expect(ITEMS.filter(i => i.category === 'sticker')).toHaveLength(0);
+    expect(ITEMS.filter(i => i.category === 'sticker')).toHaveLength(24);
   });
   it('詞庫不重複', () => {
     expect(new Set(TITLE_ADJECTIVES).size).toBe(30);
