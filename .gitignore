@@ -1,0 +1,7 @@
+# 原始娃娃照片（含家中環境），不放進 repo
+*.HEIC
+*.heic
+IMG_*.jpg
+node_modules/
+dist/
+.DS_Store
