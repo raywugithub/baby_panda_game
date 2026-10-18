@@ -47,7 +47,7 @@ export function Onboarding({ step: initial, onExit }: OnboardingProps) {
 
   function copyCode() {
     try {
-      void navigator.clipboard?.writeText(encodeSaveCode(game.value));
+      void navigator.clipboard?.writeText(encodeSaveCode(game.value)).catch(() => {});
     } catch {
       // 剪貼簿不可用時靜默略過；存檔碼仍可從設定頁匯出。
     }

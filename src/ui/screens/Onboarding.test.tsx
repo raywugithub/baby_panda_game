@@ -26,4 +26,24 @@ describe('Onboarding', () => {
     expect(screen.getByText('這個存檔碼看不懂')).toBeTruthy();
     expect(game.value.seed).toBe(5);
   });
+  it('複製存檔碼被拒絕時靜默略過，不產生未處理的 promise rejection', async () => {
+    const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: () => Promise.reject(new Error('denied')) },
+    });
+    const unhandled: unknown[] = [];
+    const onUnhandled = (e: PromiseRejectionEvent) => { unhandled.push(e.reason); };
+    globalThis.addEventListener?.('unhandledrejection', onUnhandled as EventListener);
+    try {
+      render(<Onboarding step="moveOut" />);
+      fireEvent.click(screen.getByRole('button', { name: '複製存檔碼' }));
+      await new Promise((r) => setTimeout(r, 0));
+      expect(unhandled).toEqual([]);
+    } finally {
+      globalThis.removeEventListener?.('unhandledrejection', onUnhandled as EventListener);
+      if (original) Object.defineProperty(navigator, 'clipboard', original);
+      else delete (navigator as { clipboard?: unknown }).clipboard;
+    }
+  });
 });
