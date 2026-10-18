@@ -50,6 +50,8 @@ function dropCell(p: Press, v: Point): Point | null {
 /** 布置模式：長按拖曳、放錯位置會彈回，點一下選取後可翻轉或收回。 */
 export function RoomEditor({ roomId }: { roomId: RoomId }): JSX.Element {
   const rootRef = useRef<HTMLDivElement>(null);
+  // 量測的是房間本體（不含翻轉／收回按鈕列），指標座標才會對應到 viewBox。
+  const surfaceRef = useRef<HTMLDivElement>(null);
   const machineRef = useRef(createDragMachine());
   const pressRef = useRef<Press | null>(null);
   const lastRef = useRef<Point>({ x: 0, y: 0 });
@@ -67,7 +69,7 @@ export function RoomEditor({ roomId }: { roomId: RoomId }): JSX.Element {
   const selectedItem = selected ? room.placed.find(p => p.uid === selected) : undefined;
 
   const ghostAt = (press: Press, cx: number, cy: number): Ghost | null => {
-    const v = toView(rootRef.current, cx, cy);
+    const v = toView(surfaceRef.current, cx, cy);
     if (!v) return null;
     return { item: press.item, x: v.x - press.offX, y: v.y - press.offY };
   };
@@ -85,7 +87,7 @@ export function RoomEditor({ roomId }: { roomId: RoomId }): JSX.Element {
     if (!uid || !item) return;
     g.setPointerCapture(e.pointerId);
 
-    const v = toView(rootRef.current, e.clientX, e.clientY);
+    const v = toView(surfaceRef.current, e.clientX, e.clientY);
     const rect = footprintOf(item);
     const cellW = item.layer === 'wall' ? wallRect(0).w : cellRect(0, item.y).w;
     const offX = v ? v.x - rect.x : 0;
@@ -133,7 +135,7 @@ export function RoomEditor({ roomId }: { roomId: RoomId }): JSX.Element {
     setGhost(null);
 
     if (prior === 'dragging' && press) {
-      const v = toView(rootRef.current, e.clientX, e.clientY);
+      const v = toView(surfaceRef.current, e.clientX, e.clientY);
       const cell = v ? dropCell(press, v) : null;
       const r = m.up(cell !== null, cell?.x ?? 0, cell?.y ?? 0);
       if (r.type === 'drop') {
@@ -167,33 +169,35 @@ export function RoomEditor({ roomId }: { roomId: RoomId }): JSX.Element {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
     >
-      <RoomView
-        room={room}
-        editable
-        selectedUid={selected}
-        hiddenUid={ghost?.item.uid ?? null}
-      >
-        {ghost && gf ? (
-          <svg class="room-svg" viewBox={`0 0 ${ROOM_W} ${ROOM_H}`} aria-hidden="true">
-            <g data-dragging transform={`translate(${ghost.x} ${ghost.y})`}>
-              <rect
-                x={0}
-                y={0}
-                width={gf.w}
-                height={gf.h}
-                rx={6}
-                fill="rgba(255,255,255,0.35)"
-                stroke="var(--amber, #E8A33D)"
-                stroke-width={2}
-                stroke-dasharray="6 4"
-              />
-              <g transform={`translate(${gf.w / 2} ${gf.h / 2})${gFlip}`}>
-                {Art ? <Art size={gSize} /> : null}
+      <div ref={surfaceRef}>
+        <RoomView
+          room={room}
+          editable
+          selectedUid={selected}
+          hiddenUid={ghost?.item.uid ?? null}
+        >
+          {ghost && gf ? (
+            <svg class="room-svg" viewBox={`0 0 ${ROOM_W} ${ROOM_H}`} aria-hidden="true">
+              <g data-dragging transform={`translate(${ghost.x} ${ghost.y})`}>
+                <rect
+                  x={0}
+                  y={0}
+                  width={gf.w}
+                  height={gf.h}
+                  rx={6}
+                  fill="rgba(255,255,255,0.35)"
+                  stroke="var(--amber, #E8A33D)"
+                  stroke-width={2}
+                  stroke-dasharray="6 4"
+                />
+                <g transform={`translate(${gf.w / 2} ${gf.h / 2})${gFlip}`}>
+                  {Art ? <Art size={gSize} /> : null}
+                </g>
               </g>
-            </g>
-          </svg>
-        ) : null}
-      </RoomView>
+            </svg>
+          ) : null}
+        </RoomView>
+      </div>
       {selectedItem ? (
         <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
           <button type="button" style={btn} onClick={() => commit(flip(game.value, roomId, selectedItem.uid))}>翻轉</button>

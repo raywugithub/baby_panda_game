@@ -5,12 +5,18 @@ import { game } from '../store';
 import { createInitialState } from '../../core/state';
 
 // C11: pointer positions are converted with getBoundingClientRect arithmetic.
-// The room is stubbed at 400×320 CSS px at the origin, so client px == viewBox units.
+// The room surface is stubbed at 400×320 CSS px at the origin, so client px == viewBox units.
+// The editor root also holds the 翻轉/收回 button row, so it is stubbed taller (400×400):
+// converting against the root would scale y wrongly once an item is selected.
+const ROOM_RECT = { left: 0, top: 0, right: 400, bottom: 320, width: 400, height: 320, x: 0, y: 0, toJSON() {} } as DOMRect;
+const ROOT_RECT = { left: 0, top: 0, right: 400, bottom: 400, width: 400, height: 400, x: 0, y: 0, toJSON() {} } as DOMRect;
+
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
-    left: 0, top: 0, right: 400, bottom: 320, width: 400, height: 320, x: 0, y: 0, toJSON() {},
-  } as DOMRect);
+  vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+    // The editor root is the only element carrying touch-action: none.
+    return (this as HTMLElement).style?.touchAction === 'none' ? ROOT_RECT : ROOM_RECT;
+  });
   const s = createInitialState(1, 0);
   game.value = { ...s, inventory: { ...s.inventory, 'furn-plant-pot': 1 },
     rooms: { ...s.rooms, living: { ...s.rooms.living, placed: [
@@ -83,4 +89,21 @@ it('flip button toggles the selected item', () => {
 it('editor root sets touch-action none', () => {
   const { container } = render(<RoomEditor roomId="living" />);
   expect((container.firstElementChild as HTMLElement).style.touchAction).toBe('none');
+});
+
+it('valid drop after selecting the item still maps the pointer through the room surface', () => {
+  const { container, getByText } = render(<RoomEditor roomId="living" />);
+  const g = container.querySelector('[data-uid="furn-plant-pot#1"]') as SVGGElement;
+  (g as any).setPointerCapture = () => {};
+  // Quick tap selects the item; the 翻轉/收回 row now sits inside the editor root.
+  fireEvent.pointerDown(g, { pointerId: 1, clientX: 10, clientY: 10 });
+  fireEvent.pointerUp(g, { pointerId: 1, clientX: 10, clientY: 10 });
+  expect(getByText('翻轉')).toBeTruthy();
+  // Then long-press drag to the same front-row target as the unselected case.
+  fireEvent.pointerDown(g, { pointerId: 1, clientX: 50, clientY: 100 });
+  act(() => { vi.advanceTimersByTime(300); });
+  fireEvent.pointerMove(g, { pointerId: 1, clientX: 210, clientY: 290 });
+  expect(container.querySelector('[data-dragging]')).not.toBeNull();
+  fireEvent.pointerUp(g, { pointerId: 1, clientX: 210, clientY: 290 });
+  expect(game.value.rooms.living.placed[0]).toMatchObject({ x: 4, y: 5 });
 });
