@@ -117,6 +117,29 @@ describe('saveGame / loadGame', () => {
       delete migrations[0];
     }
   });
+  it('備份失敗期間多次 saveGame，恢復後只寫入最新狀態', async () => {
+    const old = JSON.stringify({ ...s, schemaVersion: 0 });
+    localStorage.setItem('panda.save', old);
+    migrations[0] = (o: any) => ({ ...o, schemaVersion: 1 });
+    idbFault.failPut = true;
+    try {
+      const out = await loadGame(7 * MIN);
+      const s1 = { ...out.state, gold: 1 };
+      const s2 = { ...out.state, gold: 2 };
+      const s3 = { ...out.state, gold: 3 };
+      saveGame(s1);
+      saveGame(s2);
+      saveGame(s3);
+      // 備份在下一輪佇列才執行；此時立即恢復，讓第一個排隊的重試成功。
+      idbFault.failPut = false;
+      await settleBackups();
+      expect(JSON.parse(localStorage.getItem('panda.save')!).gold).toBe(3);
+      expect(saveFailed.value).toBe(false);
+    } finally {
+      idbFault.failPut = false;
+      delete migrations[0];
+    }
+  });
   it('存檔版本較新時唯讀，仍顯示內容', async () => {
     localStorage.setItem('panda.save', JSON.stringify({ ...s, schemaVersion: 99 }));
     const out = await loadGame(0);

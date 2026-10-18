@@ -20,6 +20,8 @@ let backupQueue: Promise<void> = Promise.resolve();
 let listenersInstalled = false;
 /** 遷移前備份失敗：舊版原文尚未保留，主存檔在備份成功前不可覆寫（C23）。 */
 let pendingMigration: { raw: string; key: number } | null = null;
+/** 遷移前備份等待期間收到的最新狀態；備份成功後只寫入這一份。 */
+let pendingState: GameState | null = null;
 /** 損壞原文無法保留到 corrupt 鍵：主存檔在保留成功前不可覆寫。 */
 let pendingCorrupt: string | null = null;
 
@@ -93,6 +95,7 @@ async function backupRaw(raw: string, key: number): Promise<boolean> {
 
 export async function loadGame(now: number): Promise<{ state: GameState; restored: boolean; readOnly: boolean }> {
   pendingMigration = null;
+  pendingState = null;
   pendingCorrupt = null;
   let raw: string | null;
   try {
@@ -141,7 +144,8 @@ export async function loadGame(now: number): Promise<{ state: GameState; restore
 export function saveGame(s: GameState): void {
   if (readOnly) return;
   if (pendingMigration) {
-    backupQueue = backupQueue.then(() => retryPendingMigration(s));
+    pendingState = s;
+    backupQueue = backupQueue.then(() => retryPendingMigration());
     return;
   }
   if (pendingCorrupt !== null) {
@@ -167,13 +171,15 @@ function writeMain(s: GameState): void {
   sizeWarning.value = raw.length > WARN_BYTES;
 }
 
-/** 重試遷移前備份；成功後才解除封鎖並寫入目前狀態。 */
-async function retryPendingMigration(s: GameState): Promise<void> {
+/** 重試遷移前備份；成功後才解除封鎖，並寫入等待期間的最新狀態。 */
+async function retryPendingMigration(): Promise<void> {
   const p = pendingMigration;
   if (!p) return;
   if (await backupRaw(p.raw, p.key)) {
     pendingMigration = null;
-    saveGame(s);
+    const latest = pendingState;
+    pendingState = null;
+    if (latest) saveGame(latest);
   }
 }
 
