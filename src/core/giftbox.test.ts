@@ -29,14 +29,15 @@ describe('gift box', () => {
     expect(r.itemId).toBe('');
     expect(r.state).toBe(s);
   });
-  it('rolls rarity 75/22/3 over 20000 draws (±1 point)', () => {
+  it('rolls rarity 75/22/3 over 200000 draws (±1 point)', () => {
+    // 200000 draws keep the fixed-seed sampling error well inside toBeCloseTo(x, 2) (|diff| < 0.005).
+    const N = 200000;
     const rand = mulberry32(7);
     const counts = { common: 0, shiny: 0, rainbow: 0 };
-    for (let i = 0; i < 20000; i++) counts[rollRarity(rand())]++;
-    // ±1 percentage point. toBeCloseTo(x, 2) would only allow ±0.005 and is too tight for a fixed seed.
-    for (const k of ['common', 'shiny', 'rainbow'] as const) {
-      expect(Math.abs(counts[k] / 20000 - GIFT_RATES[k])).toBeLessThanOrEqual(0.01);
-    }
+    for (let i = 0; i < N; i++) counts[rollRarity(rand())]++;
+    expect(counts.common / N).toBeCloseTo(GIFT_RATES.common, 2);
+    expect(counts.shiny / N).toBeCloseTo(GIFT_RATES.shiny, 2);
+    expect(counts.rainbow / N).toBeCloseTo(GIFT_RATES.rainbow, 2);
   });
   it('duplicate converts to marshmallow 5/15/40 by rarity', () => {
     const s0 = fresh();
