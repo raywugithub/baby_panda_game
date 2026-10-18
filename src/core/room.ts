@@ -12,7 +12,7 @@ type Layer = 'floor' | 'wall';
 const footprint = (item: ItemDef): { w: number; h: number } => item.size ?? { w: 1, h: 1 };
 
 /** 所有房間內已擺放的同一物品數量。 */
-function placedCountAll(s: GameState, itemId: string): number {
+export function placedCountAll(s: GameState, itemId: string): number {
   let n = 0;
   for (const roomId of Object.keys(s.rooms) as RoomId[]) {
     for (const p of s.rooms[roomId].placed) if (p.itemId === itemId) n++;

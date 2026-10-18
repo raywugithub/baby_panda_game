@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import type { GameState, RoomId } from '../../../core/state';
-import { place, roomUnlocked, setSurface } from '../../../core/room';
+import { place, placedCountAll, roomUnlocked, setSurface } from '../../../core/room';
 import { ITEMS } from '../../../content/items';
 import { game, commit } from '../../store';
 import { RoomView } from '../../components/RoomView';
@@ -17,11 +17,7 @@ const SURFACE_TABS: { key: SurfaceKind; label: string }[] = [
 
 /** 已持有但尚未擺進任何房間的數量。 */
 function availableCount(s: GameState, itemId: string): number {
-  let placed = 0;
-  for (const roomId of Object.keys(s.rooms) as RoomId[]) {
-    for (const p of s.rooms[roomId].placed) if (p.itemId === itemId) placed++;
-  }
-  return (s.inventory[itemId] ?? 0) - placed;
+  return (s.inventory[itemId] ?? 0) - placedCountAll(s, itemId);
 }
 
 /** 依掃描順序（先 y 後 x）找第一個可以放下的格子；牆面家具只會在 y = 0 找到。 */
