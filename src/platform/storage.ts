@@ -18,6 +18,10 @@ let readOnly = false;
 let getState: (() => GameState) | undefined;
 let backupQueue: Promise<void> = Promise.resolve();
 let listenersInstalled = false;
+/** 遷移前備份失敗：舊版原文尚未保留，主存檔在備份成功前不可覆寫（C23）。 */
+let pendingMigration: { raw: string; key: number } | null = null;
+/** 損壞原文無法保留到 corrupt 鍵：主存檔在保留成功前不可覆寫。 */
+let pendingCorrupt: string | null = null;
 
 export function setReadOnly(b: boolean): void {
   readOnly = b;
@@ -44,11 +48,13 @@ function tryParse(raw: string): unknown {
   }
 }
 
-function preserveCorrupt(raw: string): void {
+/** 保留損壞原文；失敗時回傳 false，呼叫端必須阻止覆寫主存檔。 */
+function preserveCorrupt(raw: string): boolean {
   try {
     localStorage.setItem(CORRUPT_KEY, raw);
+    return true;
   } catch {
-    // 無法保留損壞原文時仍繼續還原流程
+    return false;
   }
 }
 
@@ -86,6 +92,8 @@ async function backupRaw(raw: string, key: number): Promise<boolean> {
 }
 
 export async function loadGame(now: number): Promise<{ state: GameState; restored: boolean; readOnly: boolean }> {
+  pendingMigration = null;
+  pendingCorrupt = null;
   let raw: string | null;
   try {
     raw = localStorage.getItem(LS_KEY);
@@ -107,13 +115,21 @@ export async function loadGame(now: number): Promise<{ state: GameState; restore
     if (result !== null && result !== 'too-new') {
       setReadOnly(false);
       const fromVersion = (parsed as { schemaVersion: number }).schemaVersion;
-      if (fromVersion < SCHEMA_VERSION && (await backupRaw(raw, now))) {
-        saveGame(result);
+      if (fromVersion < SCHEMA_VERSION) {
+        if (await backupRaw(raw, now)) {
+          saveGame(result);
+        } else {
+          pendingMigration = { raw, key: now };
+          saveFailed.value = true;
+        }
       }
       return { state: result, restored: false, readOnly: false };
     }
 
-    preserveCorrupt(raw);
+    if (!preserveCorrupt(raw)) {
+      pendingCorrupt = raw;
+      saveFailed.value = true;
+    }
   }
 
   setReadOnly(false);
@@ -124,6 +140,23 @@ export async function loadGame(now: number): Promise<{ state: GameState; restore
 
 export function saveGame(s: GameState): void {
   if (readOnly) return;
+  if (pendingMigration) {
+    backupQueue = backupQueue.then(() => retryPendingMigration(s));
+    return;
+  }
+  if (pendingCorrupt !== null) {
+    if (!preserveCorrupt(pendingCorrupt)) {
+      saveFailed.value = true;
+      return;
+    }
+    pendingCorrupt = null;
+  }
+  writeMain(s);
+  const t = clockNow();
+  backupQueue = backupQueue.then(() => maybeBackup(s, t));
+}
+
+function writeMain(s: GameState): void {
   const raw = serialize(s);
   try {
     localStorage.setItem(LS_KEY, raw);
@@ -132,8 +165,16 @@ export function saveGame(s: GameState): void {
     saveFailed.value = true;
   }
   sizeWarning.value = raw.length > WARN_BYTES;
-  const t = clockNow();
-  backupQueue = backupQueue.then(() => maybeBackup(s, t));
+}
+
+/** 重試遷移前備份；成功後才解除封鎖並寫入目前狀態。 */
+async function retryPendingMigration(s: GameState): Promise<void> {
+  const p = pendingMigration;
+  if (!p) return;
+  if (await backupRaw(p.raw, p.key)) {
+    pendingMigration = null;
+    saveGame(s);
+  }
 }
 
 export async function maybeBackup(s: GameState, now: number, force = false): Promise<void> {
