@@ -17,6 +17,12 @@ import {
 } from './decor';
 import { BambooShoot, Strawberry, RiceFlour, RedBean, Honey, Mushroom } from './food';
 import {
+  StickerStar, StickerHeart, StickerBamboo, StickerCloud, StickerMoon, StickerMushroom, StickerSnowflake, StickerFlower,
+  StickerCrown, StickerBow, StickerBubble, StickerRainbow, StickerFish, StickerShell, StickerHeartEyes, StickerExclaim,
+  StickerNote, StickerSun, StickerBolt, StickerPaw, StickerShoot, StickerStrawberry, StickerMarshmallow, StickerGift,
+  FrameBamboo, FrameCloud, FrameStarNight, FrameRainbow, FrameMushroom, FrameGold,
+} from './collectibles';
+import {
   BambooShelf, PlantPot, Lantern, ToyBox, Rug, BambooChair, Lamp, Cabinet, SnackBasket, BambooFence,
   MushroomStool, FlowerVase, Sofa, Bed, Swing, ReadingNook, Bookshelf, Clock, Hammock, Beanbag, Fountain,
 } from './furniture';
@@ -105,4 +111,34 @@ export const ITEM_ART: Record<string, ComponentType<{ size: number }>> = {
   'ing-red-bean': RedBean,
   'ing-honey': Honey,
   'ing-mushroom': Mushroom,
+  'sticker-01': StickerStar,
+  'sticker-02': StickerHeart,
+  'sticker-03': StickerBamboo,
+  'sticker-04': StickerCloud,
+  'sticker-05': StickerMoon,
+  'sticker-06': StickerMushroom,
+  'sticker-07': StickerSnowflake,
+  'sticker-08': StickerFlower,
+  'sticker-09': StickerCrown,
+  'sticker-10': StickerBow,
+  'sticker-11': StickerBubble,
+  'sticker-12': StickerRainbow,
+  'sticker-13': StickerFish,
+  'sticker-14': StickerShell,
+  'sticker-15': StickerHeartEyes,
+  'sticker-16': StickerExclaim,
+  'sticker-17': StickerNote,
+  'sticker-18': StickerSun,
+  'sticker-19': StickerBolt,
+  'sticker-20': StickerPaw,
+  'sticker-21': StickerShoot,
+  'sticker-22': StickerStrawberry,
+  'sticker-23': StickerMarshmallow,
+  'sticker-24': StickerGift,
+  'frame-01': FrameBamboo,
+  'frame-02': FrameCloud,
+  'frame-03': FrameStarNight,
+  'frame-04': FrameRainbow,
+  'frame-05': FrameMushroom,
+  'frame-06': FrameGold,
 };
