@@ -190,6 +190,13 @@ button {
   padding: 0 12px;
 }
 
+.topbar-buttons button,
+.card button,
+.install-hint button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
 .topbar-buttons button:disabled,
 .care-row button:disabled,
 .kitchen-row button:disabled {
