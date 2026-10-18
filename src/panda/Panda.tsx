@@ -3,7 +3,7 @@ import type { Outfit } from '../core/state';
 import { scaleForStage, shineTier, chainThickness } from '../core/growth';
 import { POSE_TABLE, type PandaPose, type PartMove } from './poses';
 import {
-  PIVOTS, BodyShape, Strap, Tail, Leg, Arm, Ear, HeadShape, Eye, Cheek, Nose, Mouth, Nightcap,
+  PIVOTS, HEAD, BodyShape, Strap, Tail, Leg, Arm, Ear, HeadShape, Muzzle, Eye, Cheek, Nose, Mouth, Nightcap,
 } from './parts';
 import { Halo, FurShine, ShineDefs } from './shine';
 import { Collar } from './collar';
@@ -77,7 +77,8 @@ export function Panda({ pose, stage, outfit, pendants, chainLinks, size = 240, o
               <Ear side="L" />
               <Ear side="R" />
               <HeadShape />
-              <FurShine tier={tier} cx={100} cy={96} rx={46} ry={40} />
+              <FurShine tier={tier} cx={HEAD.cx} cy={HEAD.cy} rx={HEAD.rx} ry={HEAD.ry} />
+              <Muzzle />
               <Eye side="L" state={spec.eyes} />
               <Eye side="R" state={spec.eyes} />
               <Cheek side="L" on={spec.cheeks} />

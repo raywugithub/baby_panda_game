@@ -4,12 +4,12 @@ import { ITEM_ART } from '../art/items';
 
 /** 錨點（viewBox 0 0 200 240，依身形量測；縮放與姿勢前的座標）。 */
 export const ANCHORS: Record<OutfitSlot | 'pendant', { x: number; y: number }> = {
-  head: { x: 100, y: 46 },
+  head: { x: 100, y: 36 },
   face: { x: 100, y: 100 },
-  body: { x: 100, y: 170 },
-  hand: { x: 136, y: 196 },
-  tail: { x: 156, y: 198 },
-  pendant: { x: 100, y: 150 },
+  body: { x: 100, y: 172 },
+  hand: { x: 138, y: 196 },
+  tail: { x: 152, y: 196 },
+  pendant: { x: 100, y: 156 },
 };
 
 const SLOT_SIZE: Record<OutfitSlot, number> = { head: 64, face: 56, body: 84, hand: 36, tail: 36 };
