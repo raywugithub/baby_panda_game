@@ -14,28 +14,31 @@ export interface RoomViewProps {
   room?: RoomState;
   /** 成長階段；4 起加上 room-grown。 */
   stage?: number;
-  /** Task 18 編輯覆蓋層使用；此處僅保留欄位。 */
+  /** 編輯模式：讓物品接收指標事件（靜態檢視不設定，輸出不變）。 */
   editable?: boolean;
   /** 目前選取的物品 uid，會以外框標示。 */
   selectedUid?: string | null;
+  /** 拖曳中暫時隱藏的物品 uid（幽靈影像由編輯器另外繪製）。 */
+  hiddenUid?: string | null;
   children?: ComponentChildren;
 }
 
 /** 物品在房間座標中的矩形（牆面或地板透視）。 */
-function footprintOf(item: PlacedItem): Rect {
+export function footprintOf(item: PlacedItem): Rect {
   const def = ITEM_BY_ID[item.itemId];
   const w = def?.size?.w ?? 1;
   const h = def?.size?.h ?? 1;
   return item.layer === 'wall' ? wallRect(item.x, w) : cellRect(item.x, item.y, w, h);
 }
 
-function PlacedView({ item, selected }: { item: PlacedItem; selected: boolean }): JSX.Element {
+function PlacedView({ item, selected, hidden, editable }: { item: PlacedItem; selected: boolean; hidden: boolean; editable: boolean }): JSX.Element {
   const Art = ITEM_ART[item.itemId] as (typeof ITEM_ART)[string] | undefined;
   const f = footprintOf(item);
   const size = Math.min(f.w, f.h);
   const flip = item.flipped ? ' scale(-1 1)' : '';
   return (
-    <g data-uid={item.uid} data-testid={`placed-${item.uid}`} transform={`translate(${f.x} ${f.y})`}>
+    <g data-uid={item.uid} data-testid={`placed-${item.uid}`} transform={`translate(${f.x} ${f.y})`} opacity={hidden ? 0 : undefined}>
+      {editable ? <rect x={0} y={0} width={f.w} height={f.h} fill="transparent" /> : null}
       <g transform={`translate(${f.w / 2} ${f.h / 2})${flip}`}>
         {Art ? <Art size={size} /> : <rect x={-size / 2} y={-size / 2} width={size} height={size} rx={6} style={{ fill: 'var(--fur-shade)' }} />}
       </g>
@@ -63,7 +66,7 @@ function Surface({ id, y, h, color, colors }: { id: string; y: number; h: number
  * 房間背景（牆與地板）加上擺放的物品；children 疊在房間內，例如站在地板上的熊貓。
  * stage 4 起熊貓以 1.05 倍縮放，身高超過房間高度，房間加上 room-grown 讓熊貓縮小以保留頭與耳朵。
  */
-export function RoomView({ room, stage, selectedUid, children }: RoomViewProps): JSX.Element {
+export function RoomView({ room, stage, editable, selectedUid, hiddenUid, children }: RoomViewProps): JSX.Element {
   const r = room ?? game.value.rooms.living;
   const wallFallback = 'var(--fur-shade)';
   const floorFallback = 'var(--fur)';
@@ -72,7 +75,7 @@ export function RoomView({ room, stage, selectedUid, children }: RoomViewProps):
   const items = [...r.placed].sort((a, b) => a.y - b.y);
   return (
     <div class={grown ? 'room room-grown' : 'room'} role="img" aria-label="客廳">
-      <svg class="room-svg" viewBox={`0 0 ${ROOM_W} ${ROOM_H}`} aria-hidden="true">
+      <svg class="room-svg" viewBox={`0 0 ${ROOM_W} ${ROOM_H}`} aria-hidden="true" style={editable ? { pointerEvents: 'auto' } : undefined}>
         <Surface id={r.wall} y={0} h={WALL_H} color={wallFallback} colors={WALL_COLOR} />
         <Surface id={r.floor} y={WALL_H} h={ROOM_H - WALL_H} color={floorFallback} colors={FLOOR_COLOR} />
         {Array.from({ length: FLOOR_ROWS }, (_, row) =>
@@ -93,7 +96,9 @@ export function RoomView({ room, stage, selectedUid, children }: RoomViewProps):
             );
           }),
         )}
-        {items.map(p => <PlacedView key={p.uid} item={p} selected={p.uid === selectedUid} />)}
+        {items.map(p => (
+          <PlacedView key={p.uid} item={p} selected={p.uid === selectedUid} hidden={p.uid === hiddenUid} editable={editable === true} />
+        ))}
       </svg>
       {children}
     </div>
