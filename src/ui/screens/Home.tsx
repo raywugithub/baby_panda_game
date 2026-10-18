@@ -66,7 +66,6 @@ export function Home({ tutorialHint }: HomeProps = {}) {
   const mood = moodOf(s, now(), justOpenedAfterMs.value);
   const [celebrating, setCelebrating] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
-  const [mouth, setMouth] = useState<{ x: number; y: number } | null>(null);
   const [reaction, setReaction] = useState<{ pose: PandaPose } | null>(null);
   const [mailboxOpen, setMailboxOpen] = useState(false);
   const pandaBox = useRef<HTMLDivElement>(null);
@@ -140,15 +139,17 @@ export function Home({ tutorialHint }: HomeProps = {}) {
     return () => clearTimeout(t);
   }, [reaction]);
 
-  /** 餵食面板需要嘴巴的螢幕座標（C12）；沒有嘴巴元素時退回熊貓區塊中心。照顧前先醒來。 */
+  /** 放手時量測嘴巴的螢幕座標（C12）；沒有嘴巴元素時退回熊貓區塊中心。 */
+  function measureMouth(): { x: number; y: number } | null {
+    const mouthEl = pandaBox.current?.querySelector('[data-testid="panda-mouth"]');
+    const r = (mouthEl ?? pandaBox.current)?.getBoundingClientRect();
+    return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+  }
+
+  /** 照顧前先醒來。 */
   function togglePanel(p: Panel) {
     const woken = wakeUp(game.value, now());
     if (woken !== game.value) commit(woken);
-    if (p === 'feed' && panel !== 'feed') {
-      const mouthEl = pandaBox.current?.querySelector('[data-testid="panda-mouth"]');
-      const r = (mouthEl ?? pandaBox.current)?.getBoundingClientRect();
-      setMouth(r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: 0, y: 0 });
-    }
     setPanel(cur => (cur === p ? null : p));
   }
 
@@ -248,9 +249,9 @@ export function Home({ tutorialHint }: HomeProps = {}) {
       {panel ? (
         <section class="card care-panel" data-testid="care-panel">
           <h3>{PANEL_LABEL[panel]}</h3>
-          {panel === 'feed' && mouth ? (
+          {panel === 'feed' ? (
             <FeedTray
-              mouth={mouth}
+              measureMouth={measureMouth}
               onFed={r => {
                 setReaction({ pose: REACTION_POSE[r] });
                 afterFeed();

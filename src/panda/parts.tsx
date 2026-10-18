@@ -167,6 +167,8 @@ export function Mouth({ kind }: { kind: 'smile' | 'open' | 'sour' | 'chew' | 'ya
   }
   return (
     <g data-part="mouth" data-testid="panda-mouth" transform="translate(100 124)">
+      {/* 透明點擊區：細線嘴形的中心不在筆畫上，餵食拖曳的目標需要可被指到（觸控也較好按）。 */}
+      <circle r={12} fill="transparent" />
       {shape}
     </g>
   );

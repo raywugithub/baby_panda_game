@@ -26,7 +26,10 @@ try {
   // 不支援或被拒絕時忽略
 }
 
-render(<App />, document.getElementById('app')!);
-void boot(now()).then(({ welcome }) => {
-  if (welcome) openOverlay({ kind: 'welcome' });
-});
+// 先載入存檔再掛載畫面：引導步驟（C11）只在掛載時計算一次，必須看到真正的存檔狀態。
+void boot(now())
+  .catch(() => ({ welcome: false }))
+  .then(({ welcome }) => {
+    render(<App />, document.getElementById('app')!);
+    if (welcome) openOverlay({ kind: 'welcome' });
+  });

@@ -8,7 +8,8 @@ import type { FoodDef } from '../../../content/types';
 import { isNearMouth } from './careGeometry';
 
 interface Props {
-  mouth: { x: number; y: number };
+  /** 放手時才量測嘴巴位置：頁面捲動或版面變動後，開啟面板時的座標會失準。 */
+  measureMouth: () => { x: number; y: number } | null;
   onFed?: (reaction: FoodDef['reaction']) => void;
 }
 
@@ -29,7 +30,7 @@ function trayItems(inventory: Record<string, number>): FoodItem[] {
   return items;
 }
 
-export function FeedTray({ mouth, onFed }: Props) {
+export function FeedTray({ measureMouth, onFed }: Props) {
   const drag = useRef<{ id: string; pointerId: number } | null>(null);
   const items = trayItems(game.value.inventory);
 
@@ -44,7 +45,8 @@ export function FeedTray({ mouth, onFed }: Props) {
     const d = drag.current;
     drag.current = null;
     if (!d || d.pointerId !== e.pointerId) return;
-    if (!isNearMouth({ x: e.clientX, y: e.clientY }, mouth)) return;
+    const mouth = measureMouth();
+    if (!mouth || !isNearMouth({ x: e.clientX, y: e.clientY }, mouth)) return;
     const before = game.value;
     const out = feed(before, d.id, now());
     if (out.state === before) return;

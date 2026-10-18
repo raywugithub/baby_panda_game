@@ -11,7 +11,7 @@ beforeEach(() => {
 
 describe('餵食拖曳', () => {
   it('把竹筍糕拖到嘴巴附近放開，肚子 +25', () => {
-    render(<FeedTray mouth={{ x: 100, y: 100 }} />);
+    render(<FeedTray measureMouth={() => ({ x: 100, y: 100 })} />);
     const food = screen.getByRole('button', { name: '竹筍糕 ×3' });
     fireEvent.pointerDown(food, { clientX: 10, clientY: 10, pointerId: 1 });
     fireEvent.pointerUp(food, { clientX: 102, clientY: 98, pointerId: 1 });
@@ -19,7 +19,7 @@ describe('餵食拖曳', () => {
     expect(game.value.inventory['food-bamboo-cake']).toBe(2);
   });
   it('放在嘴巴以外不餵食', () => {
-    render(<FeedTray mouth={{ x: 100, y: 100 }} />);
+    render(<FeedTray measureMouth={() => ({ x: 100, y: 100 })} />);
     const food = screen.getByRole('button', { name: '竹筍糕 ×3' });
     fireEvent.pointerDown(food, { clientX: 10, clientY: 10, pointerId: 1 });
     fireEvent.pointerUp(food, { clientX: 10, clientY: 10, pointerId: 1 });
