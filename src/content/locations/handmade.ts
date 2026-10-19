@@ -18,7 +18,7 @@ export const HANDMADE: Record<HandmadeId, {
     request: { kind: 'find' },
     talk: [
       { speaker: 'manman', text: '哎呀，新朋友來啦。我是慢慢，這條小徑的老住戶了。走得慢，但沒有一片竹葉逃得過我的眼睛。' },
-      { speaker: 'panda', pose: 'shy', text: '……慢慢你好，我是熊貓。我在找一樣東西。' },
+      { speaker: 'panda', pose: 'blush', text: '……慢慢你好，我是熊貓。我在找一樣東西。' },
       { speaker: 'manman', text: '找東西的人我見多了。大多是找鑰匙，偶爾是找心情。你找的是什麼？' },
       { speaker: 'panda', text: '一顆會發光的墜飾，原本扣在我的項圈上。' },
       { speaker: 'manman', text: '竹林裡藏東西很容易，藏得太好，連竹子自己都忘了。幫我找找看吧，我記得有一處的竹葉顏色不太對。' },
@@ -35,7 +35,7 @@ export const HANDMADE: Record<HandmadeId, {
       { speaker: 'mianhua', text: '歡迎來到雲朵郵局！我是棉花，負責把信送到每一朵雲上。今天的信袋特別沉，大概裝了太多想念。' },
       { speaker: 'panda', text: '這裡的信都是飄著送的嗎？' },
       { speaker: 'mianhua', text: '當然，不飄怎麼叫雲朵郵局。不過有一封信很奇怪，寄件人寫著「慢慢老師」，收件人卻是你的項圈。' },
-      { speaker: 'panda', pose: 'stare', text: '我的項圈？慢慢老師說扣環是空的，就是因為少了那顆墜飾。' },
+      { speaker: 'panda', pose: 'starEyes', text: '我的項圈？慢慢老師說扣環是空的，就是因為少了那顆墜飾。' },
       { speaker: 'mianhua', text: '那就對了。信裡還提到一組三位數的密碼，要用場景裡的線索推出來，信箱才會打開。' },
       { speaker: 'mianhua', text: '打開之後，麻煩你幫我帶一份點心來。甜的最好，我飛了一早上，肚子咕嚕咕嚕叫。' },
     ],
