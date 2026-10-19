@@ -152,14 +152,16 @@ describe('Home 版面', () => {
   });
 
   it('熊貓可見寬度在階段 1–4 都約為房間的 35–45%（點擊區寬度依階段反向調整）', () => {
-    // 可見寬度 ≈ 點擊區寬度 × 0.79（SVG 透明邊）× 階段縮放；0.79 取自截圖量測。
+    // 實際可見寬度的比例（像素 alpha 量測，390px WebKit，見 e2e/panda-width.spec.ts）：
+    // 可見寬 ÷（點擊區寬 × 階段縮放）。jsdom 無法算繪，所以這裡用量測值換算；e2e 會直接量渲染結果。
+    const VISIBLE_RATIO = [0.687, 0.67, 0.66, 0.662];
     const xpByStage = [0, 300, 900, 1600];
     for (const stage of [1, 2, 3, 4]) {
       game.value = { ...game.value, growthXp: xpByStage[stage - 1] };
       const { unmount } = render(<Home />);
       const style = document.querySelector('.home-panda')!.getAttribute('style') ?? '';
       const tap = Number(/--panda-tap-w:\s*([\d.]+)%/.exec(style)?.[1]);
-      const visible = tap * 0.79 * scaleForStage(stage);
+      const visible = tap * VISIBLE_RATIO[stage - 1] * scaleForStage(stage);
       expect(visible, `stage ${stage}`).toBeGreaterThanOrEqual(35);
       expect(visible, `stage ${stage}`).toBeLessThanOrEqual(45);
       unmount();
