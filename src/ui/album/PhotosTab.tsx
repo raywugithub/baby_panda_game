@@ -16,6 +16,7 @@ export function PhotosTab() {
   const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState<Shown | null>(null);
   const [version, setVersion] = useState(0);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -38,10 +39,13 @@ export function PhotosTab() {
 
   async function remove(s: Shown) {
     if (!window.confirm('要刪掉這張照片嗎？')) return;
+    setError('');
     try {
       await deletePhoto(s.rec.id);
     } catch {
-      // 刪除失敗時照片仍在，重新載入即可看到實際狀態。
+      // 刪除失敗：保留大圖與提示，讓使用者再試一次。
+      setError('刪不掉，再試一次');
+      return;
     }
     setOpen(null);
     setVersion(v => v + 1);
@@ -77,9 +81,10 @@ export function PhotosTab() {
             <img src={open.url} alt={open.rec.title} />
             <p class="album-photo-kind">{KIND_LABEL[open.rec.kind]}</p>
             <div class="album-photo-actions">
-              <button type="button" onClick={() => setOpen(null)}>關閉</button>
+              <button type="button" onClick={() => { setError(''); setOpen(null); }}>關閉</button>
               <button type="button" class="album-photo-delete" onClick={() => remove(open)}>刪除</button>
             </div>
+            {error && <p class="album-photo-error" role="alert">{error}</p>}
           </div>
         </div>
       )}

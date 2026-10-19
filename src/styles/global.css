@@ -1013,6 +1013,12 @@ button {
   color: #ffffff !important;
 }
 
+.album-photo-error {
+  margin: 0;
+  color: #8A5A24;
+  font-size: 14px;
+}
+
 .album-diary-entry {
   display: flex;
   flex-direction: column;

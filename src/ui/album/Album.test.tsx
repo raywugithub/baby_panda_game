@@ -69,6 +69,23 @@ it('deleting a photo asks first, then removes it', async () => {
   confirm.mockRestore();
 });
 
+it('a failed photo delete keeps the photo open and shows an error', async () => {
+  await idbPut('photos', 'photo-1', photo('photo-1', 'photo', 1));
+  const { getByText, findAllByTestId, findByText, queryAllByTestId } = render(<Album />);
+  fireEvent.click(getByText('回憶照片'));
+  fireEvent.click((await findAllByTestId('photo-thumb'))[0]);
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  const del = vi.spyOn(IDBObjectStore.prototype, 'delete').mockImplementation(() => {
+    throw new Error('disk full');
+  });
+  fireEvent.click(getByText('刪除'));
+  await findByText('刪不掉，再試一次');
+  getByText('刪除');
+  expect(queryAllByTestId('photo-thumb')).toHaveLength(1);
+  del.mockRestore();
+  confirm.mockRestore();
+});
+
 it('diary tab lists diary entries from state and archive', async () => {
   game.value = { ...game.value, diary: [{ date: '2026-10-18', text: '今天的日記', sticker: null }] };
   await idbPut('archive', 'diary:2026-09-01', { date: '2026-09-01', text: '封存的日記', sticker: null });
