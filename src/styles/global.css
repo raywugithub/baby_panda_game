@@ -265,7 +265,7 @@ button {
   text-align: right;
 }
 
-/* 熊貓站在房間地板上：房間是背景，熊貓疊在房間內、可見寬度約為房間的 40%（點擊區 68%，熊貓身體約佔點擊區的 6 成），
+/* 熊貓站在房間地板上：房間是背景，熊貓疊在房間內、可見寬度約為房間的 40%（點擊區寬度由 Home 依階段設定 --panda-tap-w，見 PANDA_TAP_WIDTH_PCT），
    水平置中、腳底落在前排地板（距房間底緣約 14%），讓後方的家具與牆面都看得到。 */
 .home-panda {
   position: absolute;
@@ -277,7 +277,7 @@ button {
   position: absolute;
   left: 50%;
   bottom: 14%;
-  width: 68%;
+  width: var(--panda-tap-w, 68%);
   transform: translateX(-50%);
   pointer-events: auto;
 }
@@ -438,10 +438,11 @@ button {
   .shy-bounce { animation: none; }
 }
 
-/* 獎勵提示：浮在底部分頁列上方，不蓋住頂部的分段按鈕與頂欄，也不攔截點擊。 */
+/* 獎勵提示：浮在內容區上方（頂部分段按鈕與頂欄之下、房間之上的空白帶），
+   不蓋住照顧按鈕、分頁列或任何可點的控制項，也不攔截點擊。 */
 .reward-toast {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 56px);
+  top: calc(env(safe-area-inset-top) + 120px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 30;

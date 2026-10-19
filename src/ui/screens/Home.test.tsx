@@ -6,6 +6,7 @@ import { Home, idlePoseFor } from './Home';
 import { RoomView } from '../components/RoomView';
 import { overlay } from '../nav';
 import { now } from '../../platform/clock';
+import { scaleForStage } from '../../core/growth';
 
 // C13：家畫面測試固定在當地時間 12:00，避免夜間睡覺時段影響結果。
 const clock = vi.hoisted(() => ({ t: 0 }));
@@ -148,5 +149,20 @@ describe('Home 版面', () => {
     unmount();
     render(<RoomView stage={4} />);
     expect(document.querySelector('.room')!.classList.contains('room-grown')).toBe(true);
+  });
+
+  it('熊貓可見寬度在階段 1–4 都約為房間的 35–45%（點擊區寬度依階段反向調整）', () => {
+    // 可見寬度 ≈ 點擊區寬度 × 0.79（SVG 透明邊）× 階段縮放；0.79 取自截圖量測。
+    const xpByStage = [0, 300, 900, 1600];
+    for (const stage of [1, 2, 3, 4]) {
+      game.value = { ...game.value, growthXp: xpByStage[stage - 1] };
+      const { unmount } = render(<Home />);
+      const style = document.querySelector('.home-panda')!.getAttribute('style') ?? '';
+      const tap = Number(/--panda-tap-w:\s*([\d.]+)%/.exec(style)?.[1]);
+      const visible = tap * 0.79 * scaleForStage(stage);
+      expect(visible, `stage ${stage}`).toBeGreaterThanOrEqual(35);
+      expect(visible, `stage ${stage}`).toBeLessThanOrEqual(45);
+      unmount();
+    }
   });
 });

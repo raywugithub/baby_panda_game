@@ -30,11 +30,47 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 
       await page.getByTestId('giftbox-open').click();
       await expect(page.getByText(/新收藏！|已經有了！/)).toBeVisible({ timeout: 4000 });
       await page.getByRole('button', { name: '好耶', exact: true }).click();
-      // 獎勵提示可能正在顯示；提示只浮在分頁列上方，分段按鈕必須能被點到。
+      // 獎勵提示可能正在顯示；提示浮在內容區上方、不蓋住分段按鈕，分段按鈕必須能被點到。
       await page.getByRole('button', { name: '棉花糖小舖', exact: true }).click({ trial: true });
       await page.getByRole('button', { name: '棉花糖小舖', exact: true }).click();
       await expect(page.getByRole('button', { name: '棉花糖小舖', exact: true })).toHaveAttribute('aria-pressed', 'true');
     });
+
+    if (viewport.width === 390) {
+      test('the reward toast overlaps no visible control on Home, Closet, GiftBox or Album', async ({ page }) => {
+        await seedSave(page, {});
+        await page.goto('/');
+        for (const tab of ['tab-home', 'tab-closet', 'tab-giftbox', 'tab-album']) {
+          await page.getByTestId(tab).click();
+          // 與 RewardToast 相同的標記（class 與 CSS 相同），確認版面位置而不依賴隨機事件。
+          const hits = await page.evaluate(() => {
+            document.querySelectorAll('.reward-toast').forEach((n) => n.remove());
+            const d = document.createElement('div');
+            d.className = 'reward-toast';
+            d.setAttribute('role', 'status');
+            const p = document.createElement('p');
+            p.className = 'reward-toast-item';
+            p.textContent = '圖鑑里程碑：家具 ×10，送你一個禮盒！';
+            d.append(p);
+            document.body.append(d);
+            const t = p.getBoundingClientRect();
+            const out: string[] = [];
+            const sel = 'button, a, input, select, textarea, [role=tab], [role=button], [role=radio], [role=checkbox], [role=switch], [tabindex]';
+            for (const el of document.querySelectorAll(sel)) {
+              const r = el.getBoundingClientRect();
+              const cs = getComputedStyle(el);
+              if (r.width === 0 || r.height === 0 || cs.visibility === 'hidden' || cs.display === 'none') continue;
+              const ov = Math.min(t.right, r.right) - Math.max(t.left, r.left);
+              const oh = Math.min(t.bottom, r.bottom) - Math.max(t.top, r.top);
+              if (ov > 0 && oh > 0) out.push(el.textContent?.trim() || el.getAttribute('aria-label') || el.outerHTML.slice(0, 60));
+            }
+            d.remove();
+            return out;
+          });
+          expect(hits, `toast overlaps controls on ${tab}`).toEqual([]);
+        }
+      });
+    }
 
     test('a placed furniture item survives a reload', async ({ page }) => {
       await seedSave(page, { inventory: { 'furn-plant-pot': 1 } }); // seeds only when no panda.save exists yet (Self-Review 16)
