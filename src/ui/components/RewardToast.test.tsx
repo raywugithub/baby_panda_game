@@ -28,6 +28,11 @@ describe('RewardToast', () => {
     expect(visibleToasts()).toEqual([]);
     expect(eventQueue.value).toEqual([{ type: 'storyBeat', beatId: 'prologue' }]);
   });
+  it('里程碑事件顯示類別與件數並提示禮盒', async () => {
+    render(<RewardToast />);
+    await act(() => { eventQueue.value = [{ type: 'milestone', category: 'furniture', count: 10 }]; });
+    expect(screen.getByText('圖鑑里程碑：家具 ×10，送你一個禮盒！')).toBeTruthy();
+  });
   it('升階文字包含階段與稱號', async () => {
     render(<RewardToast />);
     await act(() => { eventQueue.value = [{ type: 'stageUp', stage: 2, title: '圓滾滾' }]; });

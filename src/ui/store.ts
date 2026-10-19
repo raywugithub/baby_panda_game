@@ -13,6 +13,8 @@ import {
   archiveItems,
 } from '../platform/storage';
 import { closeOverlay, overlay } from './nav';
+import { checkMilestones } from '../core/milestones';
+import { commemorate } from './photo/commemorate';
 
 export const game = signal<GameState>(createInitialState(0, 0)); // 啟動前的占位，boot 會覆蓋
 export const eventQueue = signal<GameEvent[]>([]);
@@ -41,15 +43,16 @@ function scheduleSave(): void {
 }
 
 export function commit(x: Outcome | GameState): void {
-  let next: GameState;
-  if (isOutcome(x)) {
-    next = x.state;
-    if (x.events.length > 0) eventQueue.value = [...eventQueue.value, ...x.events];
-  } else {
-    next = x;
-  }
-  const { state, archived } = splitArchive(next);
+  const outcome: Outcome = isOutcome(x) ? x : { state: x, events: [] };
+  const milestones = checkMilestones(outcome.state);
+  const events = [...outcome.events, ...milestones.events];
+  if (events.length > 0) eventQueue.value = [...eventQueue.value, ...events];
+  const { state, archived } = splitArchive(milestones.state);
   game.value = state;
+  // 升階照在 game.value 更新後才拍，讓照片裡的熊貓是新階段（失敗不影響升階）。
+  for (const e of events) {
+    if (e.type === 'stageUp') void commemorate(e.stage);
+  }
   if (archived.diary.length > 0 || archived.letters.length > 0) void archiveItems(archived);
   scheduleSave();
 }

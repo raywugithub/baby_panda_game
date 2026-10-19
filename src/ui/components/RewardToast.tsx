@@ -4,7 +4,8 @@ import type { GameEvent } from '../../core/events';
 import { RECIPES } from '../../content/recipes';
 
 const SHOW_MS = 2500;
-const TOASTABLE = new Set<GameEvent['type']>(['reward', 'markUp', 'stageUp', 'slotUnlocked', 'recipeDiscovered']);
+const TOASTABLE = new Set<GameEvent['type']>(['reward', 'markUp', 'stageUp', 'slotUnlocked', 'recipeDiscovered', 'milestone']);
+const CATEGORY_LABEL: Record<string, string> = { furniture: '家具', outfit: '衣服', pendant: '墜飾' };
 
 function isToastable(e: GameEvent): boolean {
   return TOASTABLE.has(e.type);
@@ -31,6 +32,8 @@ function textsOf(e: GameEvent): string[] {
       return ['項圈多了一個墜飾欄位！'];
     case 'recipeDiscovered':
       return [`新食譜：${RECIPES.find((r) => r.id === e.recipeId)?.name ?? e.recipeId}`];
+    case 'milestone':
+      return [`圖鑑里程碑：${CATEGORY_LABEL[e.category] ?? e.category} ×${e.count}，送你一個禮盒！`];
     default:
       return [];
   }

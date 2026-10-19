@@ -3,6 +3,8 @@ import { createInitialState } from '../core/state';
 import * as storage from '../platform/storage';
 import { game, commit, eventQueue, consumeEvents, readOnly, registerBeatAck, dismissOverlay } from './store';
 import { openOverlay, overlay } from './nav';
+import * as commemorateModule from './photo/commemorate';
+import { ITEMS } from '../content/items';
 
 beforeEach(() => { vi.useFakeTimers(); readOnly.value = false; eventQueue.value = []; });
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
@@ -51,5 +53,34 @@ describe('dismissOverlay', () => {
     dismissOverlay();
     expect(game.value.pendingBeat).toBe('ch2');
     expect(overlay.value).toBeNull();
+  });
+});
+
+describe('commit 里程碑與升階拍照', () => {
+  it('物件數達 10 時加入里程碑事件並多一個免費禮盒', () => {
+    vi.spyOn(storage, 'saveGame').mockImplementation(() => {});
+    vi.spyOn(commemorateModule, 'commemorate').mockResolvedValue();
+    const base = createInitialState(1, 0);
+    const ids = ITEMS.filter((i) => i.category === 'furniture').slice(0, 10).map((i) => i.id);
+    const inventory: Record<string, number> = {};
+    for (const id of ids) inventory[id] = 1;
+    const freeBefore = base.freeBoxes;
+    commit({ ...base, inventory });
+    expect(eventQueue.value).toContainEqual({ type: 'milestone', category: 'furniture', count: 10 });
+    expect(game.value.freeBoxes).toBe(freeBefore + 1);
+    expect(game.value.milestonesClaimed.furniture).toBe(1);
+  });
+  it('Outcome 含 stageUp 時呼叫 commemorate(stage)', () => {
+    vi.spyOn(storage, 'saveGame').mockImplementation(() => {});
+    const spy = vi.spyOn(commemorateModule, 'commemorate').mockResolvedValue();
+    commit({ state: createInitialState(1, 0), events: [{ type: 'stageUp', stage: 2, title: '圓滾滾' }] });
+    expect(spy).toHaveBeenCalledWith(2);
+  });
+  it('GameState 直接 commit、沒有升階或里程碑時不拍照也不產生事件', () => {
+    vi.spyOn(storage, 'saveGame').mockImplementation(() => {});
+    const spy = vi.spyOn(commemorateModule, 'commemorate').mockResolvedValue();
+    commit({ ...createInitialState(1, 0), inventory: {} });
+    expect(spy).not.toHaveBeenCalled();
+    expect(eventQueue.value).toEqual([]);
   });
 });
