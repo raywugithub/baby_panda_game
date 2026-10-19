@@ -1413,7 +1413,6 @@ Rules: chat lines are short, witty, Traditional Chinese, no baby talk. Example f
 import { describe, it, expect } from 'vitest';
 import { FRIENDS, FRIEND_IDS } from './friends';
 import { FOOD_IDS } from './foods';
-import { ITEMS } from './items';
 
 describe('friends content', () => {
   it('has four unique friends in the spec order', () => {
@@ -1427,10 +1426,6 @@ describe('friends content', () => {
       expect(f.likes).toHaveLength(1);
       expect(FOOD_IDS).toContain(f.likes[0]);
     }
-  });
-  it('liked item ids exist in the item catalog', () => {
-    const ids = new Set(ITEMS.map(i => i.id));
-    for (const f of FRIENDS) for (const id of f.likes) expect(ids.has(id) || FOOD_IDS.includes(id)).toBe(true);
   });
 });
 ```
