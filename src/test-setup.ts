@@ -57,3 +57,9 @@ if (typeof Blob !== 'undefined' && !Blob.prototype.text) {
     });
   };
 }
+
+// 測試環境的 object URL 用無操作的空殼（C10）；原生實作拒絕 fake-indexeddb 還原的非 Blob 值。
+if (typeof URL !== 'undefined') {
+  URL.createObjectURL = () => 'blob:test-object-url';
+  URL.revokeObjectURL = () => {};
+}

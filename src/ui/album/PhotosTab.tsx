@@ -1,0 +1,88 @@
+import { useEffect, useState } from 'preact/hooks';
+import { listPhotos, deletePhoto, type PhotoRecord } from '../../platform/photos';
+import { PHOTO_CAP } from '../../core/album';
+
+interface Shown { rec: PhotoRecord; url: string }
+
+const KIND_LABEL: Record<PhotoRecord['kind'], string> = {
+  photo: '熊貓照',
+  commemorative: '成長紀念照',
+  legend: '傳說卡',
+};
+
+/** 回憶照片：縮圖格，點一下看大圖並可刪除；物件 URL 在卸載或重新載入時釋放。 */
+export function PhotosTab() {
+  const [items, setItems] = useState<Shown[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [open, setOpen] = useState<Shown | null>(null);
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const made: string[] = [];
+    listPhotos().then(recs => {
+      if (cancelled) return;
+      const shown = recs.map(rec => {
+        const url = URL.createObjectURL(rec.blob);
+        made.push(url);
+        return { rec, url };
+      });
+      setItems(shown);
+      setLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+      made.forEach(u => URL.revokeObjectURL(u));
+    };
+  }, [version]);
+
+  async function remove(s: Shown) {
+    if (!window.confirm('要刪掉這張照片嗎？')) return;
+    try {
+      await deletePhoto(s.rec.id);
+    } catch {
+      // 刪除失敗時照片仍在，重新載入即可看到實際狀態。
+    }
+    setOpen(null);
+    setVersion(v => v + 1);
+  }
+
+  const counted = items.filter(i => !i.rec.id.startsWith('legend-')).length;
+
+  return (
+    <div class="album-photos">
+      <p class="album-photo-count">已存 {counted} / {PHOTO_CAP}</p>
+      {loaded && items.length === 0 ? (
+        <p class="album-soon">還沒有照片，去拍一張吧</p>
+      ) : (
+        <div class="album-photo-grid">
+          {items.map(s => (
+            <button
+              type="button"
+              key={s.rec.id}
+              class="album-photo-thumb"
+              data-testid="photo-thumb"
+              aria-label={`${KIND_LABEL[s.rec.kind]} ${s.rec.title}`}
+              onClick={() => setOpen(s)}
+            >
+              <img src={s.url} alt="" />
+              <span class="album-photo-kind">{KIND_LABEL[s.rec.kind]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {open && (
+        <div class="album-photo-modal">
+          <div class="album-photo-full" role="dialog" aria-label={open.rec.title}>
+            <img src={open.url} alt={open.rec.title} />
+            <p class="album-photo-kind">{KIND_LABEL[open.rec.kind]}</p>
+            <div class="album-photo-actions">
+              <button type="button" onClick={() => setOpen(null)}>關閉</button>
+              <button type="button" class="album-photo-delete" onClick={() => remove(open)}>刪除</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

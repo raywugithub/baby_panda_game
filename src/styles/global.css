@@ -907,6 +907,185 @@ button {
   color: #6b655c;
 }
 
+.album-photos,
+.album-diary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.album-photo-count {
+  margin: 0;
+  font-size: 14px;
+  color: #6b655c;
+  text-align: right;
+}
+
+.album-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.album-photo-thumb {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 44px;
+  padding: 4px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--fur-shade);
+  overflow: hidden;
+  font: inherit;
+}
+
+.album-photo-thumb img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 10px;
+  background: var(--fur);
+}
+
+.album-photo-kind {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--ink);
+  text-align: center;
+}
+
+.album-photo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(42, 40, 38, 0.55);
+}
+
+.album-photo-full {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 440px;
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--fur-shade);
+}
+
+.album-photo-full img {
+  width: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: var(--fur);
+}
+
+.album-photo-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.album-photo-actions button,
+.album-diary-stick {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--fur);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+}
+
+.album-photo-delete {
+  background: #8A5A24 !important;
+  color: #ffffff !important;
+}
+
+.album-diary-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--fur-shade);
+  color: var(--ink);
+}
+
+.album-diary-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.album-diary-date {
+  font-size: 13px;
+  color: #6b655c;
+}
+
+.album-diary-tag {
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--fur-shade);
+  font-size: 12px;
+}
+
+.album-diary-text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.album-diary-sticker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.album-diary-stick {
+  align-self: flex-end;
+  flex: 0 0 auto;
+  padding: 0 14px;
+}
+
+.album-sticker-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.album-sticker-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 2px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--fur);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+
+.album-sticker-clear {
+  grid-column: span 2;
+}
+
 .closet {
   display: flex;
   flex-direction: column;
