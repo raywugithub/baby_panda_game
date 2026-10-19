@@ -102,7 +102,7 @@ function treasureReward(rand: () => number): TreasureReward {
 
 /**
  * 以節點種子與日期決定當日版面（決定性）。
- * 手工地點的祕密類型取自 HANDMADE_SECRET；生成地點隨機決定。
+ * 手工地點的祕密類型取自 HANDMADE_SECRET、請求種類取自 HANDMADE；生成地點隨機決定。
  */
 export function dailyLayout(node: MapNode, date: string): LocationLayout {
   const rand = mulberry32(hash(node.seed, date));
@@ -114,9 +114,16 @@ export function dailyLayout(node: MapNode, date: string): LocationLayout {
       ? HANDMADE_SECRET[node.snapshot.handmadeId]
       : drawnHidden ? 'hidden' : drawnKind;
 
-  const request: LocationLayout['request'] = chance(rand, 0.5)
-    ? { kind: 'find' }
-    : { kind: 'bring', foodId: pick(rand, FOOD_IDS) };
+  // 手工地點的請求種類取自 HANDMADE（spec 6.3）；生成地點隨機決定。
+  const handmadeRequest = node.snapshot.kind === 'handmade' ? HANDMADE[node.snapshot.handmadeId].request : null;
+  const request: LocationLayout['request'] =
+    handmadeRequest !== null
+      ? handmadeRequest.kind === 'find'
+        ? { kind: 'find' }
+        : { kind: 'bring', foodId: pick(rand, FOOD_IDS) }
+      : chance(rand, 0.5)
+        ? { kind: 'find' }
+        : { kind: 'bring', foodId: pick(rand, FOOD_IDS) };
 
   const secret: LocationLayout['secret'] =
     secretType === 'hidden' ? { kind: 'hidden' } : { kind: 'puzzle', puzzle: generatePuzzle(rand, secretType) };

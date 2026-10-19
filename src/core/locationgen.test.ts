@@ -5,6 +5,7 @@ import { fresh } from './test-helpers';
 import { NOW } from './test-helpers';
 import { localDate } from './time';
 import type { MapNode } from './state';
+import { FOOD_IDS } from '../content/foods';
 
 describe('generateSnapshot', () => {
   it('is deterministic for the same seed', () => {
@@ -104,5 +105,18 @@ describe('dailyLayout', () => {
     expect(c.kind === 'puzzle' && c.puzzle.kind).toBe('codelock');
     const s2 = dailyLayout(shell, '2026-10-18').secret;
     expect(s2.kind === 'puzzle' && s2.puzzle.kind).toBe('shadow');
+  });
+
+  it('handmade request kinds follow HANDMADE: bamboo-path and shell-bay find, cloud-post bring', () => {
+    const at = (handmadeId: 'bamboo-path' | 'cloud-post' | 'shell-bay', date: string) =>
+      dailyLayout({ ...node(), snapshot: { kind: 'handmade', handmadeId } }, date);
+    for (let d = 0; d < 40; d++) {
+      const date = localDate(NOW + d * 86400000);
+      expect(at('bamboo-path', date).request.kind).toBe('find');
+      expect(at('shell-bay', date).request.kind).toBe('find');
+      const cloud = at('cloud-post', date);
+      expect(cloud.request.kind).toBe('bring');
+      if (cloud.request.kind === 'bring') expect(FOOD_IDS).toContain(cloud.request.foodId);
+    }
   });
 });
