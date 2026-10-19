@@ -35,6 +35,9 @@ import { hideFoodOnOpen, shyAfterHug, hiccupDream, recordPoke } from '../../core
 
 export { idlePoseFor };
 
+/** 熊貓腳底所在的地板列（房間底緣上方約 14%，約落在第 4 列）；第 5 列的家具畫在熊貓前面。 */
+const PANDA_ROW = 4;
+
 const AWAKE_MS = 30 * 60_000; // 契約 10.6：點醒睡覺中的熊貓後 30 分鐘內不睡
 const CELEBRATE_MS = 2000; // C23：升階時慶祝姿勢約 2 秒
 const REACTION_MS = 2000; // 餵食反應姿勢持續 2 秒
@@ -232,7 +235,7 @@ export function Home({ tutorialHint }: HomeProps = {}) {
       <InstallHint />
       <Needs />
 
-      <RoomView room={s.rooms.living} stage={stage}>
+      <RoomView room={s.rooms.living} stage={stage} depthRow={PANDA_ROW}>
         <div class={`home-panda${transientPose === 'shy' ? ' shy-ears' : ''}`} ref={pandaBox}>
           <PandaTapZone busy={transientPose === 'busyBook'} onPointerDown={onPandaPointerDown}>
             <Panda

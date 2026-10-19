@@ -265,35 +265,28 @@ button {
   text-align: right;
 }
 
-/* 熊貓站在房間地板上：房間是背景，熊貓疊在房間內底部、約為房間寬度的 60%。 */
+/* 熊貓站在房間地板上：房間是背景，熊貓疊在房間內、可見寬度約為房間的 40%（點擊區 68%，熊貓身體約佔點擊區的 6 成），
+   水平置中、腳底落在前排地板（距房間底緣約 14%），讓後方的家具與牆面都看得到。 */
 .home-panda {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  padding-bottom: 4px;
   pointer-events: none;
 }
 
-/* 熊貓 svg 是正方形框（viewBox 200×240 垂直撐滿），可見熊貓高度受房間高度限制：
-   房間改為 6:5（約 298px 高），svg 框放大到房間寬度的 104%，stage 1 的可見熊貓約為視窗寬的 51%，腳底貼住地板。 */
 .home-panda .panda-tap-zone {
-  position: relative;
-  width: 104%;
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  width: 68%;
+  transform: translateX(-50%);
   pointer-events: auto;
 }
 
+/* 熊貓 svg 是 200×240 的框，寬度撐滿點擊區，高度依比例自動算。 */
 .home-panda svg {
   display: block;
   width: 100%;
   height: auto;
-}
-
-/* stage 4 起熊貓放大到 1.05 倍，頭與耳朵會超出房間上緣；縮小熊貓寬度到 80%，讓頭頂留在框內、腳仍貼住地板。 */
-.room-grown .home-panda .panda-tap-zone {
-  width: 80%;
 }
 
 /* 戳戳「假裝很忙」浮在熊貓頭上方，不撐開房間。 */
@@ -445,10 +438,10 @@ button {
   .shy-bounce { animation: none; }
 }
 
-/* 獎勵提示：頂部下方浮出，不攔截點擊。 */
+/* 獎勵提示：浮在底部分頁列上方，不蓋住頂部的分段按鈕與頂欄，也不攔截點擊。 */
 .reward-toast {
   position: fixed;
-  top: calc(env(safe-area-inset-top) + 8px);
+  bottom: calc(env(safe-area-inset-bottom) + 56px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 30;
@@ -466,6 +459,8 @@ button {
   background: var(--ink);
   color: var(--paper);
   font-size: 14px;
+  text-align: center;
+  max-width: calc(100vw - 32px);
 }
 
 /* 對話 */

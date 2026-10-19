@@ -20,6 +20,8 @@ export interface RoomViewProps {
   selectedUid?: string | null;
   /** 拖曳中暫時隱藏的物品 uid（幽靈影像由編輯器另外繪製）。 */
   hiddenUid?: string | null;
+  /** 站在房間裡的角色所在的列；列號大於它的物品畫在角色上方（深度排序）。省略時所有物品在角色下方。 */
+  depthRow?: number;
   children?: ComponentChildren;
 }
 
@@ -34,12 +36,13 @@ export function footprintOf(item: PlacedItem): Rect {
 function PlacedView({ item, selected, hidden, editable }: { item: PlacedItem; selected: boolean; hidden: boolean; editable: boolean }): JSX.Element {
   const Art = ITEM_ART[item.itemId] as (typeof ITEM_ART)[string] | undefined;
   const f = footprintOf(item);
-  const size = Math.min(f.w, f.h);
+  // 美術是正方形（100×100 座標）：寬度填滿足跡寬（已含列縮放），底邊貼齊足跡底緣，高度沿用正方形比例。
+  const size = f.w;
   const flip = item.flipped ? ' scale(-1 1)' : '';
   return (
     <g data-uid={item.uid} data-testid={`placed-${item.uid}`} transform={`translate(${f.x} ${f.y})`} opacity={hidden ? 0 : undefined}>
       {editable ? <rect x={0} y={0} width={f.w} height={f.h} fill="transparent" /> : null}
-      <g transform={`translate(${f.w / 2} ${f.h / 2})${flip}`}>
+      <g transform={`translate(${f.w / 2} ${f.h - size / 2})${flip}`}>
         {Art ? <Art size={size} /> : <rect x={-size / 2} y={-size / 2} width={size} height={size} rx={6} style={{ fill: 'var(--fur-shade)' }} />}
       </g>
       {selected ? <rect x={0} y={0} width={f.w} height={f.h} fill="none" style={{ stroke: 'var(--amber, #E8A33D)' }} stroke-width={2} /> : null}
@@ -64,18 +67,21 @@ function Surface({ id, y, h, color, colors }: { id: string; y: number; h: number
 
 /**
  * 房間背景（牆與地板）加上擺放的物品；children 疊在房間內，例如站在地板上的熊貓。
- * stage 4 起熊貓以 1.05 倍縮放，身高超過房間高度，房間加上 room-grown 讓熊貓縮小以保留頭與耳朵。
+ * stage 4 起房間加上 room-grown 標記（供樣式使用）。
  */
-export function RoomView({ room, stage, editable, selectedUid, hiddenUid, children }: RoomViewProps): JSX.Element {
+export function RoomView({ room, stage, editable, selectedUid, hiddenUid, depthRow, children }: RoomViewProps): JSX.Element {
   const r = room ?? game.value.rooms.living;
   const wallFallback = 'var(--fur-shade)';
   const floorFallback = 'var(--fur)';
   const grown = stage !== undefined && stage >= 4;
   // 先畫後方（y 小）的物品，前方的蓋在上面。
   const items = [...r.placed].sort((a, b) => a.y - b.y);
+  const backItems = depthRow === undefined ? items : items.filter(p => p.y <= depthRow);
+  const frontItems = depthRow === undefined ? [] : items.filter(p => p.y > depthRow);
+  const pointer = editable ? { pointerEvents: 'auto' as const } : undefined;
   return (
     <div class={grown ? 'room room-grown' : 'room'} role="img" aria-label="客廳">
-      <svg class="room-svg" viewBox={`0 0 ${ROOM_W} ${ROOM_H}`} aria-hidden="true" style={editable ? { pointerEvents: 'auto' } : undefined}>
+      <svg class="room-svg" viewBox={`0 0 ${ROOM_W} ${ROOM_H}`} aria-hidden="true" style={pointer}>
         <Surface id={r.wall} y={0} h={WALL_H} color={wallFallback} colors={WALL_COLOR} />
         <Surface id={r.floor} y={WALL_H} h={ROOM_H - WALL_H} color={floorFallback} colors={FLOOR_COLOR} />
         {Array.from({ length: FLOOR_ROWS }, (_, row) =>
@@ -96,11 +102,18 @@ export function RoomView({ room, stage, editable, selectedUid, hiddenUid, childr
             );
           }),
         )}
-        {items.map(p => (
+        {backItems.map(p => (
           <PlacedView key={p.uid} item={p} selected={p.uid === selectedUid} hidden={p.uid === hiddenUid} editable={editable === true} />
         ))}
       </svg>
       {children}
+      {frontItems.length > 0 ? (
+        <svg class="room-svg" viewBox={`0 0 ${ROOM_W} ${ROOM_H}`} aria-hidden="true" style={pointer}>
+          {frontItems.map(p => (
+            <PlacedView key={p.uid} item={p} selected={p.uid === selectedUid} hidden={p.uid === hiddenUid} editable={editable === true} />
+          ))}
+        </svg>
+      ) : null}
     </div>
   );
 }

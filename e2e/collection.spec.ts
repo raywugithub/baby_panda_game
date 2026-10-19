@@ -23,6 +23,19 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 
       await expect(page.getByRole('heading', { name: '家具', exact: true })).toBeVisible();
     });
 
+    test('after a box opens, the 棉花糖小舖 segment is clickable (reward toast never covers it)', async ({ page }) => {
+      await seedSave(page, {});
+      await page.goto('/');
+      await page.getByTestId('tab-giftbox').click();
+      await page.getByTestId('giftbox-open').click();
+      await expect(page.getByText(/新收藏！|已經有了！/)).toBeVisible({ timeout: 4000 });
+      await page.getByRole('button', { name: '好耶', exact: true }).click();
+      // 獎勵提示可能正在顯示；提示只浮在分頁列上方，分段按鈕必須能被點到。
+      await page.getByRole('button', { name: '棉花糖小舖', exact: true }).click({ trial: true });
+      await page.getByRole('button', { name: '棉花糖小舖', exact: true }).click();
+      await expect(page.getByRole('button', { name: '棉花糖小舖', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    });
+
     test('a placed furniture item survives a reload', async ({ page }) => {
       await seedSave(page, { inventory: { 'furn-plant-pot': 1 } }); // seeds only when no panda.save exists yet (Self-Review 16)
       await page.goto('/');
