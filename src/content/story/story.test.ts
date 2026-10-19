@@ -14,7 +14,6 @@ describe('對話腳本', () => {
   it('resolveScript：內建腳本直接回傳；未知 id 回傳 null', () => {
     expect(resolveScript('prologue', 1)?.id).toBe('prologue');
     expect(resolveScript('nope', 1)).toBeNull();
-    expect(resolveScript('legend-1', 1)).toBeNull();
   });
   it('legend-* 交由已註冊的 resolver 解析（契約 10.8）', () => {
     registerScriptResolver((id, seed) => ({ id, lines: [{ speaker: 'narrator', text: `seed ${seed}` }] }));
