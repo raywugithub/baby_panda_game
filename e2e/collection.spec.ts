@@ -16,7 +16,11 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 
       await expect(page.getByText(/新收藏！|已經有了！/)).toBeVisible({ timeout: 4000 });
       await page.getByRole('button', { name: '好耶', exact: true }).click();
       await page.getByTestId('tab-album').click();
+      // 相簿預設就是物品圖鑑，先切到食譜，確保下一步的點擊真的會切換分頁。
+      await page.getByRole('button', { name: '食譜', exact: true }).click();
       await page.getByRole('button', { name: '物品圖鑑', exact: true }).click();
+      await expect(page.getByRole('button', { name: '物品圖鑑', exact: true })).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.getByRole('heading', { name: '家具', exact: true })).toBeVisible();
     });
 
     test('a placed furniture item survives a reload', async ({ page }) => {
