@@ -19,6 +19,12 @@ describe('runDaily', () => {
     expect(out.lastDailyDate).toBe('2026-10-18');
     expect(out.daily).toEqual({ revisitXpCount: 0, freeBoxUsed: false, visitor: null, visitorDone: false });
   });
+  it('未完成的來訪跨日保留（不限時）', () => {
+    const s = { ...fresh(), daily: { revisitXpCount: 0, freeBoxUsed: false, visitor: 'gulu' as const, visitorDone: false } };
+    const out = runDaily(s, day(18));
+    expect(out.daily.visitor).toBe('gulu');
+    expect(out.daily.visitorDone).toBe(false);
+  });
   it('跨日時把所有好友的 chatsToday 歸零', () => {
     const s = fresh();
     s.friends.juzi = { ...s.friends.juzi, chatsToday: 2 };

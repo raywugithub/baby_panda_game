@@ -19,6 +19,7 @@ import { FeedTray } from '../components/care/FeedTray';
 import { BathArea } from '../components/care/BathArea';
 import { PlayMenu } from '../components/care/PlayMenu';
 import { HugButton } from '../components/care/HugButton';
+import { VisitorCard } from '../components/VisitorCard';
 import { Kitchen } from './Kitchen';
 import { REACTION_POSE } from '../../panda/reactions';
 import type { GameEvent } from '../../core/events';
@@ -262,6 +263,7 @@ export function Home({ tutorialHint }: HomeProps = {}) {
       {dream ? <p class="dream-bubble" data-testid="dream-bubble">{dream.text}</p> : null}
       {tutorialHint ? <p class="tutorial-hint" data-testid="tutorial-hint">{tutorialHint}</p> : null}
       {mood === 'sleepy' ? <p class="sleepy-hint" data-testid="sleepy-hint">抱抱我、餵我吃點東西</p> : null}
+      <VisitorCard />
 
       <div class="care-row">
         <button type="button" data-testid="care-feed" onClick={() => togglePanel('feed')}>🍙 餵食</button>
