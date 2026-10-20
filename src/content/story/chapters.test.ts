@@ -33,6 +33,11 @@ describe('chapter scripts', () => {
       expect(all.split(clue.name).length - 1).toBe(1);
     });
   });
+  it('慢慢 says the empty clasp once held 會發光的墜飾 in a manman line', () => {
+    const hit = Object.values(CHAPTER_SCRIPTS).some(s =>
+      s.lines.some(l => l.speaker === 'manman' && l.text.includes('會發光的墜飾')));
+    expect(hit).toBe(true);
+  });
   it('every illustration key is a handmade id or a valid terrain/landmark pair', () => {
     const terrains = TERRAINS.map(t => t.id as string);
     const landmarks = LANDMARKS.map(l => l.id);
