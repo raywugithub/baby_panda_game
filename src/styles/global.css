@@ -1932,3 +1932,210 @@ button {
     transition: none;
   }
 }
+
+/* 小遊戲（接星星、跳石頭、泡泡配對）：30 秒、可跳過，遊戲區不捲動頁面。 */
+.minigame {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 16px 20px;
+}
+
+.minigame-title {
+  margin: 0;
+  font-size: 22px;
+  color: #6B4F3A;
+  text-align: center;
+}
+
+.minigame-goal {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.minigame-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.minigame-status strong {
+  font-size: 24px;
+  color: #8A5A24;
+}
+
+.minigame-target-hint {
+  font-weight: 400;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.minigame-area {
+  position: relative;
+  width: 100%;
+  height: min(60vh, 440px);
+  min-height: 300px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 3px solid #6B4F3A;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.minigame--stars .minigame-area {
+  background:
+    radial-gradient(circle at 20% 15%, #ffffff 0 1px, transparent 2px) 0 0 / 60px 60px,
+    linear-gradient(#1D2A4F, #3B4A7A 70%, #5B6AA0);
+}
+
+.minigame--hop .minigame-area {
+  background:
+    linear-gradient(90deg, transparent 0 46%, rgba(255, 255, 255, 0.35) 47% 49%, transparent 50%),
+    linear-gradient(#BFE9F5, #7FC7E0 85%, #E8DCCB 85%);
+}
+
+.minigame--bubble .minigame-area {
+  background:
+    radial-gradient(circle at 30% 25%, #FFFFFF 0, transparent 35%),
+    linear-gradient(#E4F4FF, #CFE8FA 60%, #F6EEDF);
+}
+
+.minigame-target {
+  position: absolute;
+  width: 62px;
+  height: 62px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.minigame-target svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.minigame--stars .minigame-target {
+  animation: minigame-twinkle 1.6s ease-in-out infinite alternate;
+}
+
+.minigame-target.is-popped {
+  animation: minigame-pop 260ms ease-out forwards;
+}
+
+.minigame-hopper {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  transform: translate(-50%, -80%);
+  transition: left 240ms ease-out, top 240ms ease-out;
+  pointer-events: none;
+}
+
+.minigame-hopper svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.minigame-result {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 40px);
+  box-sizing: border-box;
+  padding: 18px 16px;
+  border-radius: 20px;
+  background: #FBF7F0;
+  border: 2px solid #6B4F3A;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(42, 40, 38, 0.25);
+  animation: minigame-rise 320ms ease-out;
+}
+
+.minigame-result h3 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  color: #8A5A24;
+}
+
+.minigame-result p {
+  margin: 6px 0;
+  font-size: 15px;
+}
+
+.minigame-result .minigame-stars {
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: 4px;
+}
+
+.minigame-stars span {
+  color: #D8CFBF;
+}
+
+.minigame-stars span.on {
+  color: #E5B94E;
+}
+
+.minigame-result-cheer {
+  font-weight: 700;
+}
+
+.minigame-skip {
+  align-self: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 24px;
+  border: 2px solid #8A5A24;
+  border-radius: 14px;
+  background: none;
+  color: #8A5A24;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.minigame-skip:disabled {
+  opacity: 0.4;
+  border-color: currentColor;
+}
+
+@keyframes minigame-twinkle {
+  from { transform: translate(-50%, -50%) scale(0.94); }
+  to { transform: translate(-50%, -50%) scale(1.04); }
+}
+
+@keyframes minigame-pop {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+
+@keyframes minigame-rise {
+  from { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minigame--stars .minigame-target,
+  .minigame-target.is-popped,
+  .minigame-result,
+  .minigame-hopper {
+    animation: none;
+    transition: none;
+  }
+}
