@@ -94,3 +94,16 @@ it('diary tab lists diary entries from state and archive', async () => {
   getByText('今天的日記');
   await findByText('封存的日記');
 });
+
+it('legend records without an image render as a text card and do not count toward the cap', async () => {
+  await idbPut('photos', 'legend-5', { id: 'legend-5', kind: 'legend', title: '第 5 則小傳說', text: '第一句。\n第二句。', createdAt: 5 });
+  const { getByText, getAllByText, findByText, findAllByTestId, container } = render(<Album />);
+  fireEvent.click(getByText('回憶照片'));
+  await findByText('已存 0 / 200');
+  const card = (await findAllByTestId('photo-thumb'))[0];
+  expect(card.querySelector('img')).toBeNull();
+  getByText('第 5 則小傳說');
+  fireEvent.click(card);
+  expect(container.querySelector('.album-photo-full img')).toBeNull();
+  expect(getAllByText('第二句。', { exact: false }).length).toBeGreaterThan(0);
+});

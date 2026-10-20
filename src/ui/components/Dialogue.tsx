@@ -4,6 +4,8 @@ import { currentStage } from '../../core/growth';
 import type { FriendId } from '../../core/state';
 import { resolveScript } from '../../content/story';
 import { game, dismissOverlay } from '../store';
+import { now } from '../../platform/clock';
+import { recordLegend } from './legendRecord';
 import type { Overlay } from '../nav';
 
 const FRIEND_NAMES: Record<FriendId, string> = {
@@ -23,6 +25,12 @@ export function Dialogue({ scriptId, onDone }: DialogueProps) {
   const s = game.value;
   const script = resolveScript(scriptId, s.seed);
   const [index, setIndex] = useState(0);
+
+  // 開啟小傳說時把它存成回憶照片的傳說卡（同 id 覆寫，重複開啟無妨）。
+  useEffect(() => {
+    const m = /^legend-(\d+)$/.exec(scriptId);
+    if (m) void recordLegend(s.seed, Number(m[1]), now()).catch(() => {});
+  }, [scriptId]);
 
   // 查無腳本時直接結束，避免卡住。
   useEffect(() => {
