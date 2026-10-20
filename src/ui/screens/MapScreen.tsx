@@ -52,7 +52,8 @@ function NodeButton(props: { node: MapNode; s: GameState; x: number; y: number; 
       disabled={locked}
       style={{ left: `${x - HALF}px`, top: `${y - HALF}px`, minWidth: `${TARGET}px`, minHeight: `${TARGET}px` }}
       onClick={() => {
-        if (!locked && canEnter(s, node.id)) openOverlay({ kind: 'location', nodeId: node.id });
+        // 已完成的地點隨時可再訪；只有「開放中但需要能力」的節點不可點。
+        if (!locked) openOverlay({ kind: 'location', nodeId: node.id });
       }}
     >
       <span class="map-marker" aria-hidden="true">{locked && ability ? ABILITY_ICON[ability] : TERRAIN_ICON[terrain]}</span>

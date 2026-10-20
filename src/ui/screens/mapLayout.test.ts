@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { nodePositions } from './mapLayout';
 import { fresh } from '../../core/test-helpers';
+import type { MapNode } from '../../core/state';
 
 describe('nodePositions', () => {
   it('stacks deeper nodes higher and keeps x inside the 390px gutter (width 358)', () => {
@@ -44,5 +45,34 @@ describe('nodePositions', () => {
   it('is deterministic for the same nodes', () => {
     const nodes = [...fresh().map.nodes];
     expect(nodePositions(nodes, 358)).toEqual(nodePositions(nodes, 358));
+  });
+
+  it('no two node centers overlap on either axis in a deep map (≥20 nodes, a depth with ≥8 nodes)', () => {
+    const base = fresh().map.nodes[0];
+    const nodes = [base];
+    let nextId = 2;
+    // 第 1 層 8 個節點，第 2 層 12 個節點（分散給前幾個父節點），第 3 層 3 個。
+    const addLevel = (parents: MapNode[], count: number, seedBase: number) => {
+      const out: MapNode[] = [];
+      for (let i = 0; i < count; i++) {
+        const parent = parents[i % parents.length];
+        out.push({ ...base, id: nextId++, parentId: parent.id, seed: seedBase + i * 53 });
+      }
+      nodes.push(...out);
+      return out;
+    };
+    const l1 = addLevel([base], 8, 2000);
+    const l2 = addLevel(l1, 12, 3000);
+    addLevel(l2, 3, 4000);
+    expect(nodes.length).toBeGreaterThanOrEqual(20);
+    const pos = nodePositions(nodes, 358);
+    const maxAtDepth = Math.max(...[1, 2, 3].map(d => pos.filter(p => p.depth === d).length));
+    expect(maxAtDepth).toBeGreaterThanOrEqual(8);
+    for (let a = 0; a < pos.length; a++) {
+      for (let b = a + 1; b < pos.length; b++) {
+        const overlap = Math.abs(pos[a].x - pos[b].x) < 44 && Math.abs(pos[a].y - pos[b].y) < 44;
+        expect(overlap, `nodes ${pos[a].id} and ${pos[b].id}`).toBe(false);
+      }
+    }
   });
 });

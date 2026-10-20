@@ -47,4 +47,17 @@ describe('MapScreen', () => {
     expect(open).toHaveBeenCalledWith({ kind: 'location', nodeId: 1 });
     open.mockRestore();
   });
+
+  it('a done node stays tappable even when its ability gate is not currently met', () => {
+    const s = fresh();
+    const doneGated = { ...s.map.nodes[0], id: 71, parentId: 1, seed: 71, status: 'done' as const, lastCompletedDate: '2026-10-17',
+      snapshot: { kind: 'generated' as const, generatorVersion: 1, name: '蘑菇森林', terrain: 'mushroom' as const,
+        layout: 0 as const, weather: 'sunny' as const, landmarkId: 'lm-cabin', resident: 'passerby' as const, quirkId: 'q01', requires: 'climb' as const } };
+    game.value = { ...s, map: { ...s.map, nodes: [...s.map.nodes, doneGated] } };
+    const open = vi.spyOn(nav, 'openOverlay');
+    const { getByTestId } = render(<MapScreen />);
+    fireEvent.click(getByTestId('map-node-71'));
+    expect(open).toHaveBeenCalledWith({ kind: 'location', nodeId: 71 });
+    open.mockRestore();
+  });
 });
