@@ -1,13 +1,17 @@
 import type { FriendId, GameState, LocationProgress, MapNode } from './state';
 import type { GameEvent, Outcome, Reward } from './events';
-import { dailyLayout, terrainOf, type HotspotDef, type LocationLayout, type TreasureReward } from './locationgen';
-import { canEnter } from './mapgen';
-import { pendantModifiers } from './pendants';
+import { dailyLayout, nameOf, terrainOf, type HotspotDef, type LocationLayout, type TreasureReward } from './locationgen';
+import { canEnter, ensureEnterable, spawnChildren } from './mapgen';
+import { ingredientDropChance, pendantModifiers } from './pendants';
 import { localDate } from './time';
 import { applyReward } from './rewards';
 import { addAffinity, chat } from './friends';
 import { HANDMADE } from '../content/locations/handmade';
 import { minigameReward, type MinigameKind } from './minigames';
+import { recordVisit } from './daily';
+import { checkStory } from './story';
+import { mulberry32, hash, chance, pick } from './rng';
+import { INGREDIENT_IDS } from '../content/ingredients';
 
 const ENTER_MIN_ENERGY = 25;
 const FIND_REWARD: Reward = { xp: 15, starSand: 10 };
@@ -144,4 +148,66 @@ export function solveSecret(s: GameState, nodeId: number, now: number): GameStat
   if (layoutFor(s, nodeId, progress.date).secret.kind !== 'puzzle') return s;
   if (progress.foundHotspots.includes('secret')) return s;
   return withProgress(s, nodeId, { ...progress, foundHotspots: [...progress.foundHotspots, 'secret'] });
+}
+
+const COMPLETE_ENERGY_COST = 25;
+const REVISIT_XP_LIMIT = 3;
+const SECRET_REWARD: Reward = { xp: 10, starSand: 10 };
+
+/**
+ * 完成地點（今日已談話且已取得寶物）。首次：成長 +30、星砂 15–25；
+ * 重訪：成長 +10（每天前 3 次）、星砂 8–12。祕密另給 +10/+10（只一次）。
+ * 每次成功完成都記入信件摘要；首次完成會生成子節點並可能觸發劇情。
+ */
+export function complete(s: GameState, nodeId: number, now: number): Outcome {
+  const none: Outcome = { state: s, events: [] };
+  const today = localDate(now);
+  const node = findNode(s, nodeId);
+  if (!node) return none;
+  const p = node.progress;
+  if (!p || p.date !== today || !p.talked || !p.treasureFound) return none;
+  if (s.energy < ENTER_MIN_ENERGY || node.lastCompletedDate === today) return none;
+
+  const first = node.status === 'open';
+  const terrain = terrainOf(node.snapshot);
+  const mods = pendantModifiers(s);
+  const rand = mulberry32(hash(node.seed, today, 'complete'));
+
+  const baseSand = first ? 15 + Math.floor(rand() * 11) : 8 + Math.floor(rand() * 5);
+  let starSand = Math.round(baseSand * (1 + (mods.starSandPct[terrain] ?? 0) / 100));
+  let xp = first ? 30 : (s.daily.revisitXpCount < REVISIT_XP_LIMIT ? 10 : 0);
+
+  const secret = p.foundHotspots.includes('secret') && !node.secretFound;
+  if (secret) {
+    xp += SECRET_REWARD.xp ?? 0;
+    starSand += SECRET_REWARD.starSand ?? 0;
+  }
+
+  const drop = chance(rand, ingredientDropChance(mods) / 100) ? pick(rand, INGREDIENT_IDS) : null;
+  const items: Record<string, number> = drop ? { [drop]: 1 } : {};
+
+  const nodes = s.map.nodes.map((n): MapNode => (n.id === nodeId
+    ? { ...n, status: 'done', lastCompletedDate: today, progress: null, secretFound: n.secretFound || secret }
+    : n));
+  let state: GameState = {
+    ...s,
+    map: { ...s.map, nodes },
+    daily: first ? s.daily : { ...s.daily, revisitXpCount: s.daily.revisitXpCount + 1 },
+    completedCount: s.completedCount + (first ? 1 : 0),
+  };
+
+  const rewarded = applyReward(state, { xp, starSand, energy: -COMPLETE_ENERGY_COST, chain: 1, items });
+  state = rewarded.state;
+  let events: GameEvent[] = rewarded.events;
+
+  if (first) {
+    const spawned = spawnChildren(state, nodeId);
+    state = ensureEnterable(spawned.state);
+    events = [...events, ...spawned.events];
+  }
+
+  state = recordVisit(state, 'locations', nameOf(node.snapshot));
+
+  const story = checkStory(state);
+  return { state: story.state, events: [...events, ...story.events] };
 }

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { enter, tapHotspot, talk, solveSecret, bringFood, layoutFor, finishMinigame } from './location';
-import { pendantModifiers } from './pendants';
-import { fresh, handmadeNode, NOW, TODAY, dayLater } from './test-helpers';
+import { enter, tapHotspot, talk, solveSecret, bringFood, layoutFor, finishMinigame, complete } from './location';
+import { ingredientDropChance, pendantModifiers } from './pendants';
+import { fresh, handmadeNode, NOW, TODAY } from './test-helpers';
+import { localDate } from './time';
 
 const bambooId = (s: any) => handmadeNode(s, 'bamboo-path').id;
 
@@ -178,5 +179,76 @@ describe('finishMinigame', () => {
     s = finishMinigame(s, id, 'hop', null, NOW).state;
     expect(s.starSand).toBe(before);
     expect(s.map.nodes.find(n => n.id === id)!.progress!.foundHotspots).toContain('minigame');
+  });
+});
+
+const doneVisit = (s: any, id: number, now: number, withSecret = false) => {
+  let t = enter(s, id, now);
+  const hs = layoutFor(t, id, localDate(now));
+  t = tapHotspot(t, id, hs.hotspots.find(h => h.role === 'treasure')!.id, now).state;
+  if (withSecret) t = tapHotspot(t, id, 'secret', now).state;
+  t = talk(t, id, now).state;
+  return t;
+};
+
+describe('complete', () => {
+  it('requires talked and treasure; otherwise no-op', () => {
+    const s = enter(fresh(), bambooId(fresh()), NOW);
+    expect(complete(s, bambooId(s), NOW).state).toBe(s);
+  });
+  it('first completion: xp +30, chain +1, energy -25, starSand 15-25 before pendant bonus, count +1, spawns children', () => {
+    const base = fresh();
+    const id = bambooId(base);
+    const s = doneVisit({ ...base, energy: 100, growthXp: 0 }, id, NOW);
+    const out = complete(s, id, NOW);
+    expect(out.state.completedCount).toBe(1);
+    expect(out.state.energy).toBe(75);
+    expect(out.state.chainLinks).toBe(1);
+    expect(out.state.growthXp).toBe(30);
+    // bamboo pendant gives +20% on bamboo terrain: 15..25 becomes 18..30
+    expect(out.state.starSand - s.starSand).toBeGreaterThanOrEqual(18);
+    expect(out.state.starSand - s.starSand).toBeLessThanOrEqual(30);
+    expect(out.state.map.nodes.some(n => n.parentId === id)).toBe(true);
+    expect(out.events.some(e => e.type === 'nodesSpawned')).toBe(true);
+    expect(out.state.lastVisitedSummary.locations).toContain('竹林小徑');
+  });
+  it('completing the same node twice in one day is a no-op the second time', () => {
+    const base = fresh();
+    const id = bambooId(base);
+    const once = complete(doneVisit({ ...base, energy: 100 }, id, NOW), id, NOW).state;
+    expect(complete(once, id, NOW).state).toBe(once);
+  });
+  it('revisit: xp +10 for the first 3 revisits per day, then 0; completedCount unchanged', () => {
+    let s = fresh();
+    const id = bambooId(s);
+    s = complete(doneVisit({ ...s, energy: 100 }, id, NOW), id, NOW).state; // first completion
+    s = { ...s, energy: 100, daily: { ...s.daily, revisitXpCount: 3 } };
+    const day = NOW + 86_400_000;
+    const xpBefore = s.growthXp;
+    s = complete(doneVisit(s, id, day), id, day).state;
+    expect(s.growthXp - xpBefore).toBe(0);
+    expect(s.completedCount).toBe(1);
+  });
+  it('secret pays +10 xp and +10 starSand once, and sets secretFound', () => {
+    const s = fresh();
+    const id = bambooId(s);
+    const withSecretDone = complete(doneVisit({ ...s, energy: 100 }, id, NOW, true), id, NOW);
+    const node = withSecretDone.state.map.nodes.find(n => n.id === id)!;
+    expect(node.secretFound).toBe(true);
+    expect(withSecretDone.state.growthXp).toBe(40); // 30 first + 10 secret
+  });
+  it('energy below 25 blocks completion', () => {
+    const base = fresh();
+    const id = bambooId(base);
+    const s = doneVisit({ ...base, energy: 100 }, id, NOW);
+    const low = { ...s, energy: 20 };
+    expect(complete(low, id, NOW).state).toBe(low);
+  });
+});
+
+describe('ingredient chance', () => {
+  it('is 30% base and 60% with the mushroom pendant (+30 percentage points)', () => {
+    expect(ingredientDropChance(pendantModifiers(fresh()))).toBe(30);
+    expect(ingredientDropChance({ ...pendantModifiers(fresh()), ingredientChancePct: 30 })).toBe(60);
   });
 });
