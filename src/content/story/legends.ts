@@ -47,7 +47,7 @@ export const LEGEND_TEMPLATES: { id: string; lines: string[] }[] = [
     id: 'checklist-clue',
     lines: [
       '我找到一張紙條，上面寫著：',
-      '一、把「{clue}」擦亮。二、{friend}的早餐要藏好。三、不准再偷吃。',
+      '一、把「{clue}」記牢。二、{friend}的早餐要藏好。三、不准再偷吃。',
       '字跡很熟悉，我看了很久，最後發現是自己小時候寫的。',
     ],
   },
@@ -62,7 +62,7 @@ export const LEGEND_TEMPLATES: { id: string; lines: string[] }[] = [
   {
     id: 'moon-clue',
     lines: [
-      '有人說，「{clue}」會在月亮最圓的晚上亮一下。',
+      '有人說，月亮最圓的晚上，「{clue}」會回來一次。',
       '我等了一整晚，只看見一隻蝸牛從窗台慢慢爬過。',
       '蝸牛很有禮貌地說：「快了，光總是慢慢來的。」',
     ],
@@ -78,16 +78,16 @@ export const LEGEND_TEMPLATES: { id: string; lines: string[] }[] = [
   {
     id: 'adventure-steps-clue',
     lines: [
-      '第一條規則：先找到「{clue}」。',
+      '第一條規則：先想清楚「{clue}」是什麼意思。',
       '第二條規則：不准用眼睛以外的器官偷看。',
-      '第三條規則：把它帶回家，放在最顯眼的地方。',
+      '第三條規則：把它寫進日記，放在最顯眼的地方。',
       '後來我才發現，最後一條其實是：先跟{friend}說一聲。',
     ],
   },
   {
     id: 'open-ending-clue',
     lines: [
-      '傳說裡沒說完的那一段，大概藏在「{clue}」的另一面。',
+      '傳說裡沒說完的那一段，大概還藏在「{clue}」裡。',
       '也許有一天，會有人從很遠的地方寄來回信。',
       '在那之前，我先把這一頁折起來，等你翻開它。',
     ],
