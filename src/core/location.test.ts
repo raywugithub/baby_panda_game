@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { enter, tapHotspot, talk, solveSecret, bringFood, layoutFor } from './location';
+import { enter, tapHotspot, talk, solveSecret, bringFood, layoutFor, finishMinigame } from './location';
 import { pendantModifiers } from './pendants';
 import { fresh, handmadeNode, NOW, TODAY, dayLater } from './test-helpers';
 
@@ -161,3 +161,22 @@ describe('handmade residents', () => {
 function pendantBonus(s: ReturnType<typeof fresh>): number {
   return pendantModifiers(s).affinityBonus;
 }
+
+describe('finishMinigame', () => {
+  it('finishMinigame counts once per day even if called twice (abort then finish)', () => {
+    let s = enter(fresh(), bambooId(fresh()), NOW);
+    const id = bambooId(s);
+    s = finishMinigame(s, id, 'stars', null, NOW).state;
+    const again = finishMinigame(s, id, 'stars', 1, NOW);
+    expect(again.state).toBe(s);
+    expect(again.events).toHaveLength(0);
+  });
+  it('a skipped minigame gives no reward but is marked done', () => {
+    let s = enter(fresh(), bambooId(fresh()), NOW);
+    const id = bambooId(s);
+    const before = s.starSand;
+    s = finishMinigame(s, id, 'hop', null, NOW).state;
+    expect(s.starSand).toBe(before);
+    expect(s.map.nodes.find(n => n.id === id)!.progress!.foundHotspots).toContain('minigame');
+  });
+});

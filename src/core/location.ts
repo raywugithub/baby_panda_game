@@ -7,6 +7,7 @@ import { localDate } from './time';
 import { applyReward } from './rewards';
 import { addAffinity, chat } from './friends';
 import { HANDMADE } from '../content/locations/handmade';
+import { minigameReward, type MinigameKind } from './minigames';
 
 const ENTER_MIN_ENERGY = 25;
 const FIND_REWARD: Reward = { xp: 15, starSand: 10 };
@@ -118,6 +119,21 @@ export function bringFood(s: GameState, nodeId: number, foodId: string, now: num
     foundHotspots: [...progress.foundHotspots, 'request'],
   });
   return grant(state, FIND_REWARD, friendOf(node), REQUEST_AFFINITY);
+}
+
+/**
+ * 小遊戲結束（完成、跳過或中途離開）；每天只計一次。
+ * score01 為 null 代表跳過或中止，不發獎勵但仍標記為已完成。
+ */
+export function finishMinigame(s: GameState, nodeId: number, kind: MinigameKind, score01: number | null, now: number): Outcome {
+  const none: Outcome = { state: s, events: [] };
+  const node = findNode(s, nodeId);
+  const progress = progressToday(node, localDate(now));
+  if (!node || !progress || progress.foundHotspots.includes('minigame')) return none;
+  const marked = withProgress(s, nodeId, { ...progress, foundHotspots: [...progress.foundHotspots, 'minigame'] });
+  if (score01 === null) return { state: marked, events: [] };
+  const r = minigameReward(score01, pendantModifiers(s).minigameStarSandPct);
+  return applyReward(marked, { xp: r.xp, starSand: r.starSand });
 }
 
 /** 祕密謎題解開後呼叫（UI 於 checkAnswer 為 true 時呼叫）；只標記，不發獎勵 */
