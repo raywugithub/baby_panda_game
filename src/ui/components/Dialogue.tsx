@@ -6,6 +6,7 @@ import { resolveScript } from '../../content/story';
 import { game, dismissOverlay } from '../store';
 import { now } from '../../platform/clock';
 import { recordLegend } from './legendRecord';
+import { SceneIllustration } from '../../art/scenes/LocationScene';
 import type { Overlay } from '../nav';
 
 const FRIEND_NAMES: Record<FriendId, string> = {
@@ -66,6 +67,11 @@ export function Dialogue({ scriptId, onDone }: DialogueProps) {
           size={180}
         />
       </div>
+      {script.illustration && (
+        <div class="dialogue-scene" data-testid="dialogue-illustration">
+          <SceneIllustration id={script.illustration} />
+        </div>
+      )}
       <div class="dialogue-box" data-testid="dialogue-box" data-side={side} onClick={() => advance()}>
         {name !== null && <p class="dialogue-name">{name}</p>}
         <p class={side === 'narration' ? 'dialogue-text narration' : 'dialogue-text'}>{line.text}</p>

@@ -49,3 +49,18 @@ describe('Dialogue 熊貓尺寸', () => {
     expect(Number(svg!.getAttribute('height'))).toBeGreaterThanOrEqual(160);
   });
 });
+
+describe('Dialogue illustration', () => {
+  it('renders the script illustration as a scene image above the text', () => {
+    game.value = createInitialState(5, 0);
+    render(<Dialogue scriptId="ch4" />);
+    const ill = screen.getByTestId('dialogue-illustration');
+    expect(ill.querySelector('svg')).not.toBeNull();
+    expect(ill.compareDocumentPosition(screen.getByTestId('dialogue-box')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+  it('omits the illustration when the script has none', () => {
+    game.value = createInitialState(5, 0);
+    render(<Dialogue scriptId="prologue" />);
+    expect(screen.queryByTestId('dialogue-illustration')).toBeNull();
+  });
+});

@@ -30,10 +30,10 @@ it('shows the delete prompt when the album is full', async () => {
   await findByText(/相簿滿了（200 張）/);
 });
 
-it('location photo falls back to a solid backdrop before Plan B exists', () => {
+it('location photo uses the LocationBackdrop once Plan B provides it', () => {
   const { container } = render(<PhotoOverlay overlay={{ kind: 'photo', context: { nodeId: 3 } }} />);
-  const rect = container.querySelector('[data-testid="photo-backdrop-plain"]');
-  expect(rect?.getAttribute('fill')).toBe('#E8DCCB');
+  expect(container.querySelector('[data-testid="location-backdrop"]')).not.toBeNull();
+  expect(container.querySelector('[data-testid="photo-backdrop-plain"]')).toBeNull();
 });
 
 it('has no save-to-phone, download or share control', () => {
