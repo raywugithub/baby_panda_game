@@ -3,11 +3,12 @@ import { registerSW } from 'virtual:pwa-register';
 import './styles/global.css';
 import { App } from './ui/App';
 import { openOverlay } from './ui/nav';
-import { boot, game, registerBeatAck } from './ui/store';
+import { boot, commit, game, registerBeatAck } from './ui/store';
 import { ackBeat } from './core/story';
 import { updateAvailable, setUpdateHandler } from './platform/pwa';
 import { flushOnHide, maybeBackup } from './platform/storage';
 import { now } from './platform/clock';
+import { ensureEnterable } from './core/mapgen';
 
 // 關閉劇情時排入下一個到期劇情（契約 10.8）；由 UI 啟動模組登記，內容層不引用 UI。
 registerBeatAck(ackBeat);
@@ -34,6 +35,9 @@ try {
 void boot(now())
   .catch(() => ({ welcome: false }))
   .then(({ welcome }) => {
+    // 讀檔後確保至少一個地點可進入（舊存檔或能力變動時，避免地圖全部鎖住）。
+    const fixed = ensureEnterable(game.value);
+    if (fixed !== game.value) commit(fixed);
     render(<App />, document.getElementById('app')!);
     if (welcome) openOverlay({ kind: 'welcome' });
   });

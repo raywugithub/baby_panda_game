@@ -9,11 +9,12 @@ import { Closet } from './Closet';
 import { GiftBox } from './GiftBox';
 import { PhotoOverlay } from '../photo/PhotoOverlay';
 import { Album } from '../album/Album';
+import { MapScreen } from './MapScreen';
 
 // 各計畫在此登記畫面元件；後續任務會替換下列對應值（例如 home 由 Task 22 替換）。
 export const TAB_SCREENS: Record<Tab, ComponentType> = {
   home: Home,
-  map: Placeholder,
+  map: MapScreen,
   closet: Closet,
   giftbox: GiftBox,
   album: Album,
