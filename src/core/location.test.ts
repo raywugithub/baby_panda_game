@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { enter, tapHotspot, talk, solveSecret, bringFood, layoutFor } from './location';
+import { pendantModifiers } from './pendants';
 import { fresh, handmadeNode, NOW, TODAY, dayLater } from './test-helpers';
-import { spawnChildren } from './mapgen';
 
 const bambooId = (s: any) => handmadeNode(s, 'bamboo-path').id;
 
@@ -53,7 +53,7 @@ describe('hotspots and progress', () => {
   it('a hidden secret is recorded as found under id "secret"', () => {
     let s = enter(fresh(), bambooId(fresh()), NOW);
     const id = bambooId(s);
-    if (layoutFor(s, id, TODAY).secret.kind !== 'hidden') return; // bamboo-path is always hidden per Task 4
+    expect(layoutFor(s, id, TODAY).secret.kind).toBe('hidden'); // bamboo-path is always hidden per Task 4
     s = tapHotspot(s, id, 'secret', NOW).state;
     expect(s.map.nodes.find(n => n.id === id)!.progress!.foundHotspots).toContain('secret');
   });
@@ -83,7 +83,8 @@ describe('requests and puzzle secrets (extra coverage)', () => {
     const s0 = enter(fresh(), bambooId(fresh()), NOW);
     const id = bambooId(s0);
     const layout = layoutFor(s0, id, TODAY);
-    if (layout.request.kind !== 'find') return; // only meaningful when bamboo rolls a find request
+    expect(layout.request.kind).toBe('find'); // bamboo-path always requests a find
+    if (layout.request.kind !== 'find') return;
     const req = layout.hotspots.find(h => h.role === 'request')!;
     const out = tapHotspot(s0, id, req.id, NOW);
     expect(out.state.growthXp).toBe(s0.growthXp + 15);
@@ -121,3 +122,42 @@ describe('requests and puzzle secrets (extra coverage)', () => {
     expect(solveSecret(solved, id, NOW)).toEqual(solved);
   });
 });
+
+describe('handmade residents', () => {
+  it('tapping bamboo-path find request gives manman +10 affinity', () => {
+    const s0 = enter(fresh(), bambooId(fresh()), NOW);
+    const id = bambooId(s0);
+    const req = layoutFor(s0, id, TODAY).hotspots.find(h => h.role === 'request')!;
+    const before = s0.friends.manman.points;
+    const out = tapHotspot(s0, id, req.id, NOW);
+    expect(out.state.friends.manman.points - before).toBe(10 + pendantBonus(s0));
+  });
+
+  it('talk on bamboo-path calls chat for manman', () => {
+    const s0 = enter(fresh(), bambooId(fresh()), NOW);
+    const id = bambooId(s0);
+    const out = talk(s0, id, NOW);
+    expect(out.state.friends.manman.chatsToday).toBe(1);
+    expect(out.state.friends.manman.points).toBeGreaterThan(s0.friends.manman.points);
+    expect(out.state.map.nodes.find(n => n.id === id)!.progress!.talked).toBe(true);
+  });
+
+  it('bringFood on cloud-post gives mianhua +10 affinity', () => {
+    let s = fresh();
+    const id = bambooId(s);
+    s = { ...s, map: { ...s.map, nodes: s.map.nodes.map(n => n.id === id ? { ...n, snapshot: { kind: 'handmade', handmadeId: 'cloud-post' } } : n) } };
+    s = enter(s, id, NOW);
+    const layout = layoutFor(s, id, TODAY);
+    expect(layout.request.kind).toBe('bring');
+    if (layout.request.kind !== 'bring') return;
+    const foodId = layout.request.foodId;
+    s = { ...s, inventory: { ...s.inventory, [foodId]: 1 } };
+    const before = s.friends.mianhua.points;
+    const out = bringFood(s, id, foodId, NOW)!;
+    expect(out.state.friends.mianhua.points - before).toBe(10 + pendantBonus(s));
+  });
+});
+
+function pendantBonus(s: ReturnType<typeof fresh>): number {
+  return pendantModifiers(s).affinityBonus;
+}

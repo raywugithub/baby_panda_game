@@ -6,6 +6,7 @@ import { pendantModifiers } from './pendants';
 import { localDate } from './time';
 import { applyReward } from './rewards';
 import { addAffinity, chat } from './friends';
+import { HANDMADE } from '../content/locations/handmade';
 
 const ENTER_MIN_ENERGY = 25;
 const FIND_REWARD: Reward = { xp: 15, starSand: 10 };
@@ -25,9 +26,12 @@ export function layoutFor(s: GameState, nodeId: number, date: string): LocationL
   return { ...base, hotspots: [...base.hotspots, extra] };
 }
 
-/** 居民若為朋友則回傳其編號；手工地點與路人皆回傳 null */
+/** 居民若為朋友則回傳其編號；路人回傳 null（手工地點讀 HANDMADE 的居民） */
 function friendOf(node: MapNode): FriendId | null {
-  return node.snapshot.kind === 'generated' && node.snapshot.resident !== 'passerby' ? node.snapshot.resident : null;
+  const resident = node.snapshot.kind === 'handmade'
+    ? HANDMADE[node.snapshot.handmadeId].resident
+    : node.snapshot.resident;
+  return resident === 'passerby' ? null : resident;
 }
 
 function progressToday(node: MapNode | undefined, today: string): LocationProgress | null {
