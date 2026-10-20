@@ -2139,3 +2139,37 @@ button {
     transition: none;
   }
 }
+
+/* 小遊戲的目標狀態：下一塊要跳的石頭會發亮、點錯會搖一搖、選中的泡泡會放大。 */
+.minigame-target.is-next {
+  animation: minigame-glow 0.9s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 6px #FFE38A) drop-shadow(0 0 2px #FFFFFF);
+}
+
+.minigame-target.is-wobble {
+  animation: minigame-wobble 380ms ease-in-out;
+}
+
+.minigame-target.is-selected {
+  scale: 1.15;
+  filter: drop-shadow(0 0 5px #3D8FD1);
+}
+
+@keyframes minigame-glow {
+  from { scale: 1; }
+  to { scale: 1.12; }
+}
+
+@keyframes minigame-wobble {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -12deg; }
+  50% { rotate: 10deg; }
+  75% { rotate: -5deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minigame-target.is-next,
+  .minigame-target.is-wobble {
+    animation: none;
+  }
+}

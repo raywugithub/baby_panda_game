@@ -43,11 +43,20 @@ export function SteppingStone({ size }: { size: number }): JSX.Element {
   );
 }
 
-/** 泡泡：半透明的淡藍圓泡，左上有高光，底部帶一點彩虹色的反光。 */
-export function Bubble({ size }: { size: number }): JSX.Element {
+/** 泡泡配對用的四種顏色（同色才能配成一對）。 */
+export const BUBBLE_TINTS = {
+  pink: '#F4B6C2',
+  blue: '#9FD3E6',
+  yellow: '#F6DA8A',
+  green: '#B9DDA0',
+} as const;
+export type BubbleTint = keyof typeof BUBBLE_TINTS;
+
+/** 泡泡：半透明的彩色圓泡，左上有高光，底部帶一點彩虹色的反光。 */
+export function Bubble({ size, tint = 'blue' }: { size: number; tint?: BubbleTint }): JSX.Element {
   return (
     <Frame size={size} label="泡泡">
-      <circle cx={50} cy={50} r={42} fill="#BFE6FF" opacity={0.85} {...OUTLINE} stroke="#3D8FD1" />
+      <circle cx={50} cy={50} r={42} fill={BUBBLE_TINTS[tint]} opacity={0.9} {...OUTLINE} stroke="#3D8FD1" />
       <path d="M22 58 Q30 80 56 84" fill="none" stroke={PAL.pink} stroke-width={4} stroke-linecap="round" opacity={0.8} />
       <path d="M70 66 Q76 58 80 60" fill="none" stroke={PAL.goldLight} stroke-width={3} stroke-linecap="round" opacity={0.9} />
       <ellipse cx={34} cy={32} rx={9} ry={6} fill={PAL.white} opacity={0.9} transform="rotate(-30 34 32)" />
