@@ -348,7 +348,7 @@ export function Minigame({ kind, onFinish }: MinigameProps): JSX.Element {
             剩下 <strong>{secsLeft}</strong> 秒
           </span>
           <span class="minigame-count" data-testid="minigame-count">
-            {cfg.countLabel} <strong>{hits}</strong> {cfg.unit}
+            {cfg.countLabel} <strong data-testid="minigame-hits">{hits}</strong> {cfg.unit}
             <span class="minigame-target-hint">（目標 {game.target}）</span>
           </span>
         </div>

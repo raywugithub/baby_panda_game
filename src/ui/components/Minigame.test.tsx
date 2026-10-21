@@ -2,6 +2,12 @@ import { render, fireEvent, act, screen } from '@testing-library/preact';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Minigame } from './Minigame';
 
+// 固定亂數種子，讓泡泡顏色與跳石頭的順序每次執行都相同（測試不隨機失敗）。
+vi.mock('../../platform/clock', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../platform/clock')>()),
+  randomSeed: () => 20241021,
+}));
+
 // jsdom 沒有版面，所以把遊戲區的矩形固定為 300×400（與 CSS 的比例相近）。
 const RECT = { left: 0, top: 0, width: 300, height: 400, right: 300, bottom: 400, x: 0, y: 0, toJSON() {} } as DOMRect;
 const RADIUS_PX = 32;
@@ -32,8 +38,9 @@ function tapAt(x: number, y: number): void {
 function tapTarget(el: HTMLElement): void {
   tapAt((Number(el.dataset.x) / 100) * RECT.width, (Number(el.dataset.y) / 100) * RECT.height);
 }
+/** 只讀取命中數字本身（不含「（目標 N）」提示），避免字串比對誤判。 */
 function count(): string {
-  return screen.getByTestId('minigame-count').textContent ?? '';
+  return screen.getByTestId('minigame-hits').textContent ?? '';
 }
 
 describe('Minigame', () => {
@@ -75,7 +82,7 @@ describe('Minigame', () => {
     }
     expect(spot).not.toBeNull();
     for (let i = 0; i < 8; i++) tapAt(spot!.x, spot!.y);
-    expect(count()).toContain('0');
+    expect(count()).toBe('0');
     advance(30_000);
     expect(onFinish).toHaveBeenCalledWith(0);
   });
@@ -86,9 +93,9 @@ describe('Minigame', () => {
     const x = (Number(star.dataset.x) / 100) * RECT.width;
     const y = (Number(star.dataset.y) / 100) * RECT.height;
     tapAt(x + RADIUS_PX + 6, y);
-    expect(count()).toContain('0');
+    expect(count()).toBe('0');
     tapAt(x + RADIUS_PX - 6, y);
-    expect(count()).toContain('1');
+    expect(count()).toBe('1');
   });
   it('re-tapping a caught star does not count again', () => {
     render(<Minigame kind="stars" onFinish={() => {}} />);
@@ -96,7 +103,7 @@ describe('Minigame', () => {
     const star = waitFor()!;
     tapTarget(star);
     tapTarget(star);
-    expect(count()).toContain('1');
+    expect(count()).toBe('1');
   });
   it('hop: only the highlighted next stone counts; a wrong stone just wobbles', () => {
     render(<Minigame kind="hop" onFinish={() => {}} />);
@@ -105,10 +112,10 @@ describe('Minigame', () => {
     const wrong = waitFor((el) => el.dataset.next !== 'true')!;
     expect(wrong).not.toBeNull();
     tapTarget(wrong);
-    expect(count()).toContain('0');
+    expect(count()).toBe('0');
     expect(wrong.className).toContain('is-wobble');
     tapTarget(next);
-    expect(count()).toContain('1');
+    expect(count()).toBe('1');
   });
   it('hop: eight correct crossings score 1', () => {
     const onFinish = vi.fn();
@@ -129,9 +136,9 @@ describe('Minigame', () => {
     const mate = waitFor((el) => el.dataset.pair === first.dataset.pair && el !== first)!;
     expect(mate.dataset.color).toBe(first.dataset.color);
     tapTarget(first);
-    expect(count()).toContain('0');
+    expect(count()).toBe('0');
     tapTarget(mate);
-    expect(count()).toContain('1');
+    expect(count()).toBe('1');
   });
   it('bubble: tapping two different colours scores nothing', () => {
     render(<Minigame kind="bubble" onFinish={() => {}} />);
@@ -141,7 +148,7 @@ describe('Minigame', () => {
     expect(b).not.toBeNull();
     tapTarget(a);
     tapTarget(b);
-    expect(count()).toContain('0');
+    expect(count()).toBe('0');
   });
   it('play area uses touch-action none', () => {
     const { getByTestId } = render(<Minigame kind="bubble" onFinish={() => {}} />);
