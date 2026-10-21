@@ -1,8 +1,8 @@
 import { useState } from 'preact/hooks';
 import { ItemsTab } from './ItemsTab';
 import { RecipesTab } from './RecipesTab';
-import FriendCardsTab from './FriendCardsTab';
-import StampsTab from './StampsTab';
+import { FriendCardsTab } from './FriendCardsTab';
+import { StampsTab } from './StampsTab';
 import { PhotosTab } from './PhotosTab';
 import { DiaryTab } from './DiaryTab';
 

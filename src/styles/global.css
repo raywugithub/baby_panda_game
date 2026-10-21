@@ -2291,3 +2291,206 @@ button {
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(42, 40, 38, 0.34) 0%, rgba(42, 40, 38, 0) 70%);
 }
+
+/* 相簿：朋友卡、地點印章 */
+.album-friends,
+.album-stamps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friend-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+}
+
+.friend-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.friend-portrait {
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--fur-shade);
+}
+
+.friend-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.friend-name {
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.friend-title {
+  font-size: 13px;
+  color: #6b655c;
+}
+
+.friend-level {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #8A5A24;
+}
+
+.friend-bar {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--fur-shade);
+  overflow: hidden;
+}
+
+.friend-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: #E8879A;
+  transition: width 0.3s ease;
+}
+
+.friend-next,
+.friend-sub,
+.friend-furn-locked,
+.friend-story-locked {
+  color: #6b655c;
+}
+
+.friend-next {
+  margin: 0;
+  font-size: 13px;
+}
+
+.friend-sub {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
+.friend-stories {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.friend-story {
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--fur);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.friend-story:disabled {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--fur-shade);
+  opacity: 0.8;
+}
+
+.friend-furniture {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.friend-furniture li {
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+.stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--fur-shade);
+}
+
+.stamp-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 2px dashed #C98A63;
+  background: #FFFDF8;
+  transform: rotate(-4deg);
+}
+
+.stamp-star {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  font-size: 18px;
+  color: #E5B94E;
+  text-shadow: 0 0 2px #6B4F3A;
+}
+
+.stamp-name {
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--ink);
+}
+
+.stamp-clues {
+  padding: 12px;
+}
+
+.clue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clue {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: var(--paper);
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.clue-no {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: #8A5A24;
+}
+
+.clue-missing {
+  color: #6b655c;
+}
