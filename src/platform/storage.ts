@@ -13,6 +13,8 @@ export const WARN_BYTES = 1_000_000;
 export const saveFailed = signal(false);
 export const sizeWarning = signal(false);
 export const storageUnavailable = signal(false);
+/** 啟動讀檔失敗：停止所有寫入，避免蓋掉真正的存檔。 */
+export const bootFailed = signal(false);
 
 let readOnly = false;
 let getState: (() => GameState) | undefined;

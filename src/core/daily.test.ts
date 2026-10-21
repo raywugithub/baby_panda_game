@@ -41,7 +41,7 @@ describe('runDaily', () => {
     expect(out.diary[1].text).toBe('舊的');
   });
   it('日期倒退不執行、不重複發放', () => {
-    const s = { ...fresh(), lastDailyDate: '2026-10-18', daily: { revisitXpCount: 3, freeBoxUsed: true, visitor: null, visitorDone: false } };
+    const s = { ...fresh(), lastDailyDate: '2026-10-11', daily: { revisitXpCount: 3, freeBoxUsed: true, visitor: null, visitorDone: false } };
     expect(runDaily(s, day(10)).daily.revisitXpCount).toBe(3);
   });
   it('依序呼叫已登記的 handler，每天一次，且清空 summary 在最後', () => {

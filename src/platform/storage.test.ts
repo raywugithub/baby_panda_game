@@ -61,7 +61,7 @@ describe('saveGame / loadGame', () => {
   it('損壞原文無法保留時不覆寫主存檔，保留成功後才寫入（標記 saveFailed）', async () => {
     localStorage.setItem('panda.save', 'garbage');
     const orig = localStorage.setItem;
-    const spy = vi.spyOn(localStorage, 'setItem').mockImplementation((k: string, v: string) => {
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation((k: string, v: string) => {
       if (k === 'panda.save.corrupt') throw new Error('quota');
       orig.call(localStorage, k, v);
     });
@@ -153,7 +153,7 @@ describe('saveGame / loadGame', () => {
     }
   });
   it('localStorage 寫入失敗時不拋錯，並標記 saveFailed', () => {
-    vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new Error('quota'); });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota'); });
     expect(() => saveGame(s)).not.toThrow();
     expect(saveFailed.value).toBe(true);
     vi.restoreAllMocks();

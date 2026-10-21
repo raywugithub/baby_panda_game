@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createInitialState } from '../core/state';
 import * as storage from '../platform/storage';
-import { game, commit, eventQueue, consumeEvents, readOnly, registerBeatAck, dismissOverlay } from './store';
+import { game, commit, eventQueue, consumeEvents, readOnly, registerBeatAck, dismissOverlay, boot, resume } from './store';
 import { openOverlay, overlay } from './nav';
 import * as commemorateModule from './photo/commemorate';
 import { ITEMS } from '../content/items';
@@ -82,5 +82,45 @@ describe('commit 里程碑與升階拍照', () => {
     commit({ ...createInitialState(1, 0), inventory: {} });
     expect(spy).not.toHaveBeenCalled();
     expect(eventQueue.value).toEqual([]);
+  });
+});
+
+describe('boot 與回到前景', () => {
+  it('讀檔失敗：唯讀、顯示提示，且不接上存檔來源（不會蓋掉存檔）', async () => {
+    vi.useRealTimers();
+    localStorage.setItem(storage.LS_KEY, 'KEEP-ME');
+    vi.spyOn(storage, 'loadGame').mockRejectedValue(new Error('boom'));
+    const src = vi.spyOn(storage, 'setStateSource');
+    await expect(boot(1000)).rejects.toThrow('boom');
+    expect(readOnly.value).toBe(true);
+    expect(storage.bootFailed.value).toBe(true);
+    expect(src).not.toHaveBeenCalled();
+    storage.flushOnHide();
+    expect(localStorage.getItem(storage.LS_KEY)).toBe('KEEP-ME');
+    storage.bootFailed.value = false;
+    localStorage.removeItem(storage.LS_KEY);
+  });
+  it('回到前景：重新計算離線時間並重置每日；超過 24 小時先給歡迎回來', async () => {
+    vi.useRealTimers();
+    vi.spyOn(storage, 'saveGame').mockImplementation(() => {});
+    const H = 3600_000;
+    const t0 = new Date(2026, 9, 18, 10).getTime();
+    vi.spyOn(storage, 'loadGame').mockResolvedValue({
+      state: { ...createInitialState(1, t0), lastSeenAt: t0, lastDailyDate: '2026-10-18' },
+      restored: false,
+      readOnly: false,
+    });
+    await boot(t0);
+    const before = game.value.starSand;
+    // 一小時後回來：需求下降、lastSeenAt 更新
+    const tiredBefore = game.value.needs.tummy;
+    expect(resume(t0 + H)).toBe(false);
+    expect(game.value.lastSeenAt).toBe(t0 + H);
+    expect(game.value.needs.tummy).toBeLessThanOrEqual(tiredBefore);
+    // 隔天（超過 24 小時）：每日重置 + 歡迎回來
+    expect(resume(t0 + 30 * H)).toBe(true);
+    expect(game.value.lastDailyDate).toBe('2026-10-19');
+    expect(game.value.starSand).toBe(before + 30);
+    expect(game.value.letters.some((l) => l.id === `welcome-${t0 + 30 * H}`)).toBe(true);
   });
 });

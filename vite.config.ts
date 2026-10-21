@@ -12,10 +12,14 @@ function gitHash(): string {
   }
 }
 
+// Node 22.4+ 才有 --no-experimental-webstorage；Node 20（CI）傳入會讓 worker 啟動失敗，所以要看版本。
+const [nodeMajor, nodeMinor] = process.versions.node.split('.').map(Number);
+const hasWebstorageFlag = nodeMajor > 22 || (nodeMajor === 22 && nodeMinor >= 4);
+
 export default defineConfig({
   base: './',
   plugins: [preact(), VitePWA(PWA_OPTIONS)],
   define: { __APP_VERSION__: JSON.stringify(gitHash()) },
   // e2e/ 由 Playwright 執行（npm run test:e2e），不交給 Vitest。
-  test: { environment: 'jsdom', setupFiles: ['src/test-setup.ts'], exclude: [...configDefaults.exclude, 'e2e/**'] },
+  test: { ...(hasWebstorageFlag ? { execArgv: ['--no-experimental-webstorage'] } : {}), environment: 'jsdom', setupFiles: ['src/test-setup.ts'], exclude: [...configDefaults.exclude, 'e2e/**'] },
 });

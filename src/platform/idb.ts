@@ -17,7 +17,14 @@ function openDb(): Promise<IDBDatabase> {
         }
       };
       req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
+      req.onerror = () => {
+        dbPromise = undefined; // 暫時性失敗不要永久快取
+        reject(req.error);
+      };
+      req.onblocked = () => {
+        dbPromise = undefined;
+        reject(new Error('idb blocked'));
+      };
     });
   }
   return dbPromise;

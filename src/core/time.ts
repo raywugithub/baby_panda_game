@@ -38,7 +38,10 @@ export function applyElapsed(s: GameState, now: number): GameState {
 }
 
 export function isNewDay(s: GameState, now: number): boolean {
-  return localDate(now) > s.lastDailyDate;
+  const today = localDate(now);
+  if (today > s.lastDailyDate) return true;
+  // 手機時間被往後調過又調回來：lastDailyDate 比明天還晚就視為壞值，讓每日重置恢復。
+  return s.lastDailyDate > localDate(now + 36 * H);
 }
 
 /** 必須在 applyElapsed 之前呼叫（需要舊的 lastSeenAt）。 */

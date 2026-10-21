@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { game, commit } from '../store';
+import { game, commit, readOnly } from '../store';
 import type { Overlay } from '../nav';
 import { InstallGuide } from '../components/InstallGuide';
 import { encodeSaveCode } from '../../core/save';
@@ -135,8 +135,10 @@ export function Settings(_props: { overlay?: Overlay } = {}) {
         {message ? <p role="status">{message}</p> : null}
 
         {importStage === 'idle' ? (
-          <button type="button" onClick={() => setImportStage('confirm')}>匯入存檔碼</button>
+          <button type="button" disabled={readOnly.value} onClick={() => setImportStage('confirm')}>匯入存檔碼</button>
         ) : null}
+
+        {readOnly.value ? <p role="status">目前是唯讀模式，無法匯入。請先更新遊戲。</p> : null}
 
         {importStage === 'confirm' ? (
           <div class="settings-confirm">

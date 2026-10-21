@@ -11,8 +11,10 @@ import {
   setReadOnly,
   installFlushListeners,
   archiveItems,
+  bootFailed,
 } from '../platform/storage';
-import { closeOverlay, overlay } from './nav';
+import { closeOverlay, openOverlay, overlay } from './nav';
+import { now } from '../platform/clock';
 import { checkMilestones } from '../core/milestones';
 import { commemorate } from './photo/commemorate';
 
@@ -72,23 +74,70 @@ export function dismissOverlay(): void {
   closeOverlay();
 }
 
-export async function boot(t: number): Promise<{ welcome: boolean }> {
-  setStateSource(() => game.value);
-  installFlushListeners();
-  const loaded = await loadGame(t);
-  readOnly.value = loaded.readOnly;
-  restored.value = loaded.restored;
-  setReadOnly(loaded.readOnly);
-  justOpenedAfterMs.value = offlineMs(loaded.state, t);
-  let s = loaded.state;
-  const w = welcomeBack(s, t); // 必須在 applyElapsed 之前（需要舊的 lastSeenAt）
+/** 讀檔後（或回到前景時）依序處理：歡迎回來 → 離線時間 → 每日重置。welcomeBack 必須在 applyElapsed 之前。 */
+function advance(s0: GameState, t: number): { state: GameState; welcome: boolean } {
+  let s = s0;
+  const w = welcomeBack(s, t);
   if (w) {
     s = w.state;
     eventQueue.value = [...eventQueue.value, ...w.events];
   }
   s = applyElapsed(s, t);
   s = runDaily(s, t);
-  game.value = s;
+  return { state: s, welcome: w !== null };
+}
+
+/** 回到前景：重新計算離線時間與每日重置（iOS 主畫面 App 通常是被喚醒而不是重開）。 */
+export function resume(t: number): boolean {
+  if (!booted) return false;
+  const { state, welcome } = advance(game.value, t);
+  justOpenedAfterMs.value = offlineMs(game.value, t);
+  commit(state);
+  return welcome;
+}
+
+let booted = false;
+let resumeInstalled = false;
+function installResumeListeners(): void {
+  if (resumeInstalled) return;
+  resumeInstalled = true;
+  document.addEventListener('visibilitychange', () => {
+    if (!booted) return;
+    if (document.visibilityState === 'hidden') {
+      // 離開時記下時間：玩的時間不算離線，之後離開的時間才會讓需求下降。
+      game.value = { ...game.value, lastSeenAt: now() };
+    } else if (resume(now())) {
+      openOverlay({ kind: 'welcome' });
+    }
+  });
+}
+
+export async function boot(t: number): Promise<{ welcome: boolean }> {
+  let loaded;
+  try {
+    loaded = await loadGame(t);
+  } catch (e) {
+    // 讀檔失敗：絕不能讓占位狀態蓋掉真正的存檔。不接上存檔來源、設為唯讀並顯示提示。
+    readOnly.value = true;
+    setReadOnly(true);
+    bootFailed.value = true;
+    throw e;
+  }
+  readOnly.value = loaded.readOnly;
+  restored.value = loaded.restored;
+  setReadOnly(loaded.readOnly);
+  justOpenedAfterMs.value = offlineMs(loaded.state, t);
+  let result: { state: GameState; welcome: boolean };
+  try {
+    result = advance(loaded.state, t);
+  } catch {
+    result = { state: loaded.state, welcome: false };
+  }
+  game.value = result.state;
+  setStateSource(() => game.value);
+  installFlushListeners();
+  booted = true;
+  installResumeListeners();
   scheduleSave();
-  return { welcome: w !== null };
+  return { welcome: result.welcome };
 }

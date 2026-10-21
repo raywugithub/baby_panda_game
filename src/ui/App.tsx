@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { game, dismissOverlay, restored } from './store';
 import { tab, overlay, goTab, openOverlay, TAB_ORDER } from './nav';
 import { TAB_SCREENS, OVERLAY_SCREENS } from './screens/registry';
-import { saveFailed, sizeWarning, storageUnavailable } from '../platform/storage';
+import { saveFailed, sizeWarning, storageUnavailable, bootFailed } from '../platform/storage';
 import { RewardToast } from './components/RewardToast';
 import { Onboarding } from './screens/Onboarding';
 import { initialStep, hasProgress, readMoveOutDismissed, OnbStep } from './onboarding';
@@ -52,6 +52,7 @@ export function App() {
       <canvas id="fx" class="fx-canvas" aria-hidden="true" style={{ pointerEvents: 'none' }} />
       <div class="app-shell">
         {saveFailed.value && <div class="banner" role="alert">目前無法存檔，請匯出備份</div>}
+        {bootFailed.value && <div class="banner" role="alert">讀取進度時出了問題，為了保護存檔，這次不會儲存。請重新開啟遊戲</div>}
         {storageUnavailable.value && <div class="banner" role="alert">這裡無法保存進度，請匯出備份</div>}
         {sizeWarning.value && <div class="banner" role="alert">存檔變大了，建議匯出備份</div>}
         {restored.value && (
