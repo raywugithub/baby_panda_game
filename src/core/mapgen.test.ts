@@ -95,3 +95,24 @@ describe('canEnter and ensureEnterable', () => {
     expect(canEnter(fixed, 61)).toBe(true);
   });
 });
+
+describe('generated location names vary', () => {
+  it('60 spawns in a row: no duplicate name and no phrase within 5 consecutive nodes', async () => {
+    const { generateSnapshot, nameOf } = await import('./locationgen');
+    const { QUIRKS } = await import('../content/locations');
+    const names: string[] = [];
+    for (let i = 0; i < 60; i++) {
+      const snap = generateSnapshot(1000 + i * 37, ['climb', 'dive'], names);
+      names.push(nameOf(snap));
+    }
+    expect(new Set(names).size).toBe(60);
+    const phrase = (n: string) => QUIRKS.find((q) => n.startsWith(q.phrase))!.phrase;
+    for (let i = 5; i < names.length; i++) {
+      expect(names.slice(i - 5, i).map(phrase)).not.toContain(phrase(names[i]));
+    }
+  });
+  it('first-try names are unchanged when nothing is taken (old seeds stay the same)', async () => {
+    const { generateSnapshot } = await import('./locationgen');
+    expect(generateSnapshot(42, ['climb'])).toEqual(generateSnapshot(42, ['climb'], []));
+  });
+});

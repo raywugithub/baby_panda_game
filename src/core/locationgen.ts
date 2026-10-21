@@ -12,19 +12,33 @@ export const GENERATOR_VERSION = 1;
 
 const FRIEND_IDS: readonly FriendId[] = ['mianhua', 'juzi', 'manman', 'gulu'];
 const LAYOUTS = [0, 1] as const;
+const RECENT_PHRASES = 5;
+const MAX_NAME_TRIES = 8;
 
 /**
  * 以種子生成地點快照。抽取順序固定（決定性）：
  * 地形、版型、天氣、地標、居民、怪事、門檻。
  */
-export function generateSnapshot(seed: number, abilitiesImplemented: readonly Ability[]): LocationSnapshot {
+export function generateSnapshot(
+  seed: number,
+  abilitiesImplemented: readonly Ability[],
+  /** 已經用過的地名（舊到新）；新地名不可重複，也不重複最近 5 個的怪事用語 */
+  takenNames: readonly string[] = [],
+): LocationSnapshot {
   const rand = mulberry32(seed);
   const terrain = pick(rand, TERRAINS);
   const layout = pick(rand, LAYOUTS);
   const weather = pick(rand, WEATHERS);
   const landmark = pick(rand, LANDMARKS);
   const resident: FriendId | 'passerby' = chance(rand, 0.5) ? pick(rand, FRIEND_IDS) : 'passerby';
-  const quirk = pick(rand, QUIRKS);
+  let quirk = pick(rand, QUIRKS);
+  const recentPhrases = takenNames.slice(-RECENT_PHRASES).map(n => QUIRKS.find(q => n.startsWith(q.phrase))?.phrase);
+  const clashes = (q: (typeof QUIRKS)[number]): boolean =>
+    takenNames.includes(q.phrase + terrain.noun) || recentPhrases.includes(q.phrase);
+  // 第一次抽到就可用時不動亂數順序（舊種子結果不變）；撞名時才用另外的亂數重抽。
+  for (let attempt = 1; attempt <= MAX_NAME_TRIES && clashes(quirk); attempt++) {
+    quirk = pick(mulberry32(hash(seed, 'name', attempt)), QUIRKS);
+  }
   const gate = chance(rand, 0.25);
   const ability = terrain.ability;
   const requires: Ability | null =
@@ -87,7 +101,11 @@ const SLOTS: readonly [number, number][] = [[222, 318], [300, 300], [250, 392], 
 export const EXTRA_SLOT: readonly [number, number] = [318, 452];
 
 /** 密碼線索模板；{d} 為密碼第 i 位數字 */
-const CLUE_TEMPLATES = ['樹洞裡的松鼠藏了 {d} 顆栗子', '石頭上有 {d} 道刻痕', '草叢裡的蝴蝶停了 {d} 次'];
+const CLUE_TEMPLATES = [
+  '第一個數字：樹洞裡的松鼠藏了 {d} 顆栗子',
+  '第二個數字：石頭上有 {d} 道刻痕',
+  '第三個數字：草叢裡的蝴蝶停了 {d} 次',
+];
 
 function shuffled<T>(rand: () => number, arr: readonly T[]): T[] {
   const out = arr.slice();

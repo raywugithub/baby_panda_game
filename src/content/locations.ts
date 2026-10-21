@@ -35,7 +35,7 @@ export const LANDMARKS: { id: string; name: string }[] = [
 
 /** 怪事：phrase 接在地名前（phrase + noun）；event 為發現時的一句話 */
 export const QUIRKS: { id: string; phrase: string; event: string }[] = [
-  { id: 'q01', phrase: '會唱歌的', event: '鹽湖裡的歌聲，聽起來像在打哈欠' },
+  { id: 'q01', phrase: '會唱歌的', event: '歌聲聽起來像在打哈欠，唱到一半還會停下來喘口氣' },
   { id: 'q02', phrase: '打呵欠的', event: '一打呵欠，附近的花就全都合上了' },
   { id: 'q03', phrase: '下糖果雨的', event: '天上掉下的糖果雨，只有一顆是酸的' },
   { id: 'q04', phrase: '倒著走路的', event: '走了半天才發現，大家都在往後退' },
@@ -51,7 +51,7 @@ export const QUIRKS: { id: string; phrase: string; event: string }[] = [
   { id: 'q14', phrase: '喜歡跳舞的', event: '所有的小草都在隨風擺動，節奏剛剛好' },
   { id: 'q15', phrase: '會鑽洞的', event: '地底下傳來咚咚聲，大概是寶藏在敲門' },
   { id: 'q16', phrase: '把雲當被子的', event: '天上的雲被蓋得鬆鬆軟軟，還冒著熱氣' },
-  { id: 'q17', phrase: '很愛排隊的', event: '所有的花都排成一列，說要去看海' },
+  { id: 'q17', phrase: '愛數雲朵的', event: '雲朵一朵一朵被數過，數到一半就睡著了' },
   { id: 'q18', phrase: '會說悄悄話的', event: '風在耳邊小聲說，今天的秘密是蘋果派' },
   { id: 'q19', phrase: '愛打盹的', event: '樹一打盹，整片葉子就跟著慢慢垂下來' },
   { id: 'q20', phrase: '會倒數的', event: '每走一步，遠方的燈塔就眨一下眼睛' },

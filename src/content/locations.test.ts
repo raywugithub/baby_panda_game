@@ -20,3 +20,11 @@ describe('location content', () => {
     expect(map).toEqual({ bamboo: 'climb', mushroom: 'climb', beach: 'dive', starlake: 'dive', cloud: null, snow: null });
   });
 });
+
+describe('quirk phrases', () => {
+  it('every phrase is unique, and no event mentions a terrain-specific thing', () => {
+    expect(new Set(QUIRKS.map((q) => q.phrase)).size).toBe(QUIRKS.length);
+    expect(QUIRKS.some((q) => q.event.includes('鹽湖'))).toBe(false);
+    expect(QUIRKS.some((q) => q.phrase.includes('排隊') && q.id === 'q17')).toBe(false);
+  });
+});

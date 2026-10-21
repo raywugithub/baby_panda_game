@@ -29,16 +29,30 @@ export function FallingStar({ size }: { size: number }): JSX.Element {
   );
 }
 
-/** 石頭：灰褐色的圓潤踏腳石，上方長了一小片苔蘚。 */
-export function SteppingStone({ size }: { size: number }): JSX.Element {
+/**
+ * 石頭：moss 是踩得穩的踏腳石（灰褐色，上面長了綠色苔蘚）；
+ * slick 是會滑的石頭（偏藍的濕滑石頭，閃著水光，沒有苔蘚）。
+ */
+export function SteppingStone({ size, variant = 'moss' }: { size: number; variant?: 'moss' | 'slick' }): JSX.Element {
+  const slick = variant === 'slick';
   return (
-    <Frame size={size} label="踏腳石">
-      <ellipse cx={50} cy={60} rx={42} ry={26} fill="#B9AE9C" {...OUTLINE} />
+    <Frame size={size} label={slick ? '會滑的石頭' : '踏腳石'}>
+      <ellipse cx={50} cy={60} rx={42} ry={26} fill={slick ? '#9FB4C4' : '#B9AE9C'} {...OUTLINE} />
       <path d="M18 56 Q50 34 84 54" fill="none" stroke={PAL.creamLight} stroke-width={3} stroke-linecap="round" opacity={0.7} />
-      <path d="M28 66 Q44 52 62 66" fill="none" stroke="#8C8273" stroke-width={2} stroke-linecap="round" />
-      <ellipse cx={30} cy={36} rx={14} ry={7} fill={PAL.bamboo} {...OUTLINE} />
-      <circle cx={24} cy={34} r={2.2} fill={PAL.goldLight} />
-      <circle cx={36} cy={38} r={1.8} fill={PAL.goldLight} />
+      {slick ? (
+        <>
+          <path d="M30 50 Q46 42 62 48" fill="none" stroke={PAL.white} stroke-width={5} stroke-linecap="round" opacity={0.85} />
+          <circle cx={70} cy={50} r={3} fill={PAL.white} opacity={0.9} />
+          <path d="M28 68 Q44 56 62 68" fill="none" stroke="#6F8799" stroke-width={2} stroke-linecap="round" />
+        </>
+      ) : (
+        <>
+          <path d="M28 66 Q44 52 62 66" fill="none" stroke="#8C8273" stroke-width={2} stroke-linecap="round" />
+          <ellipse cx={30} cy={36} rx={14} ry={7} fill={PAL.bamboo} {...OUTLINE} />
+          <circle cx={24} cy={34} r={2.2} fill={PAL.goldLight} />
+          <circle cx={36} cy={38} r={1.8} fill={PAL.goldLight} />
+        </>
+      )}
     </Frame>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { minigameOffered, scoreFromHits, minigameReward, remainingMs, GAME_SECONDS } from './minigames';
+import { minigameOffered, minigameKind, scoreFromHits, minigameReward, remainingMs, GAME_SECONDS } from './minigames';
 
 describe('minigames core', () => {
   it('is offered about 30% of the time', () => {
@@ -9,8 +9,17 @@ describe('minigames core', () => {
     expect(n / 4000).toBeLessThan(0.34);
   });
   it('score clamps to 1 and is hits over target', () => {
-    expect(scoreFromHits('stars', 6)).toBeCloseTo(0.5);
+    expect(scoreFromHits('stars', 12)).toBeCloseTo(0.5);
     expect(scoreFromHits('stars', 99)).toBe(1);
+  });
+  it('kind varies by node on the same day, but is stable for one node', () => {
+    const kinds = new Set<string>();
+    for (let n = 1; n <= 50; n++) kinds.add(minigameKind(77, n, '2026-10-18'));
+    expect([...kinds].sort()).toEqual(['bubble', 'hop', 'stars']);
+    expect(minigameKind(77, 5, '2026-10-18')).toBe(minigameKind(77, 5, '2026-10-18'));
+  });
+  it('score never goes below 0', () => {
+    expect(scoreFromHits('hop', -3)).toBe(0);
   });
   it('reward scales between 5 and 15 before pendant bonus', () => {
     expect(minigameReward(0, 0)).toEqual({ xp: 5, starSand: 5 });

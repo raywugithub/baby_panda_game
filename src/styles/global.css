@@ -2494,3 +2494,44 @@ button {
 .clue-missing {
   color: #6b655c;
 }
+
+/* 小遊戲：結果卡的按鈕、踩到滑石頭時的提示 */
+.minigame-close {
+  min-height: 44px;
+  min-width: 96px;
+  margin-top: 8px;
+  padding: 8px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--amber);
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+}
+
+.minigame-area.is-frozen {
+  filter: saturate(0.6);
+}
+
+.minigame--hop .minigame-target {
+  transition: top 240ms ease-out;
+}
+
+/* 地點：線索與提示 */
+.loc-note {
+  margin: 8px 16px 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.loc-clues ul {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+
+.loc-clues li {
+  margin: 2px 0;
+}

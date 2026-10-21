@@ -50,8 +50,12 @@ describe('RewardToast', () => {
     });
     expect(visibleToasts()).toEqual(['棉花 好感度升到 Lv2！']);
     act(() => { vi.advanceTimersByTime(2500); });
+    expect(visibleToasts()).toEqual(['新故事可以看了（相簿 → 朋友卡）']);
+    act(() => { vi.advanceTimersByTime(2500); });
     expect(visibleToasts()).toEqual(['橘子 好感度升到 Lv3！']);
     act(() => { vi.advanceTimersByTime(2500); });
     expect(visibleToasts()).toEqual(['解鎖專屬家具']);
+    act(() => { vi.advanceTimersByTime(2500); });
+    expect(visibleToasts()).toEqual(['新故事可以看了（相簿 → 朋友卡）']);
   });
 });

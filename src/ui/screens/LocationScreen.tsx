@@ -1,5 +1,6 @@
 import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
+import { hash, mulberry32, pick } from '../../core/rng';
 import { game, commit } from '../store';
 import { closeOverlay, goTab, openOverlay, type Overlay } from '../nav';
 import { now } from '../../platform/clock';
@@ -34,16 +35,36 @@ function foodName(id: string): string {
   return FOODS.find((f) => f.id === id)?.name ?? id;
 }
 
+const FILLER_NOTES = [
+  '這裡只有一隻小蟲在曬太陽。',
+  '翻了翻，只有幾顆圓圓的小石子。',
+  '什麼都沒有，不過這裡的風好舒服。',
+  '一片葉子輕輕飄了下來。',
+  '有一隻蝸牛慢慢爬過去，打了個招呼。',
+  '嗯，這裡只有軟軟的草。',
+];
+
+/** 一天一天往下數的序號；用來讓朋友每天說不一樣的話。 */
+function dayOrdinal(date: string): number {
+  const [y, m, d] = date.split('-').map(Number);
+  return Math.floor(Date.UTC(y, m - 1, d) / 86_400_000);
+}
+
+/** 朋友今天要說的聊天台詞編號：隔天換一句、不同地點也不同。 */
+export function chatIndex(date: string, nodeId: number, level: number, len: number): number {
+  return (((dayOrdinal(date) + nodeId * 3 + level - 1) % len) + len) % len;
+}
+
 /** 談話內容：手工地點用其專屬對話；生成地點取朋友當日一句聊天（路人則用一句閒聊）。 */
-function talkScript(s: GameState, node: MapNode, nodeId: number): DialogueScript {
+function talkScript(s: GameState, node: MapNode, nodeId: number, date: string): DialogueScript {
   const id = `loc-${nodeId}-talk`;
   if (node.snapshot.kind === 'handmade') return { id, lines: HANDMADE[node.snapshot.handmadeId].talk };
   const resident = residentOf(node);
   if (resident === 'passerby') return { id, lines: [{ speaker: 'passerby', text: PASSERBY_CHAT }] };
   const level = levelOf(s.friends[resident].points);
   const chat = FRIENDS.find((f) => f.id === resident)?.chat ?? [];
-  // 依等級輪流取台詞；台詞表為空時退回路人閒聊，避免取到 undefined。
-  const line = chat.length > 0 ? chat[(level - 1) % chat.length] : PASSERBY_CHAT;
+  // 依日期與地點輪流取台詞（不會一直重複同一句）；台詞表為空時退回路人閒聊。
+  const line = chat.length > 0 ? chat[chatIndex(date, nodeId, level, chat.length)] : PASSERBY_CHAT;
   return { id, lines: [{ speaker: resident, text: line }] };
 }
 
@@ -65,6 +86,8 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
   const [puzzleOpen, setPuzzleOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
+  // 點到線索或空點時顯示的一句話。
+  const [note, setNote] = useState<string | null>(null);
   // 熊貓的反應動作：找到寶物或祕密時短暫開心，之後回到行走。
   const [reaction, setReaction] = useState<{ pose: PandaPose; n: number } | null>(null);
   useEffect(() => {
@@ -95,7 +118,11 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
   const minigameDone = found.includes('minigame');
   const resident = residentOf(node);
   const friendName = resident === 'passerby' ? '路人' : FRIENDS.find((f) => f.id === resident)!.name;
-  const canComplete = !!progress && talked && treasureFound;
+  const hasEnergy = s.energy >= COMPLETE_ENERGY_COST;
+  const canComplete = !!progress && talked && treasureFound && hasEnergy;
+  const missing = [!talked ? '說話' : null, !treasureFound ? '找到寶物' : null].filter((x): x is string => x !== null);
+  const clueSpots = layout.hotspots.filter((h) => h.role === 'clue');
+  const foundClues = clueSpots.filter((h) => found.includes(h.id));
   const offerMini = !!progress && !minigameDone && minigameOffered(s.seed, nodeId, today);
   const ownedFood = FOOD_IDS.filter((id) => (s.inventory[id] ?? 0) > 0);
 
@@ -103,6 +130,12 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
     const hs = layout.hotspots.find((h) => h.id === hotspotId);
     const wasFound = found.includes(hotspotId);
     commit(tapHotspot(game.value, nodeId, hotspotId, now()));
+    if (hs?.role === 'clue') setNote(hs.clue ?? null);
+    else if (hs?.role === 'filler') setNote(pick(mulberry32(hash(node.seed, hs.id)), FILLER_NOTES));
+    else if (hs?.role === 'treasure' && !wasFound) setNote('找到寶物了！');
+    else if (hs?.role === 'request' && !wasFound) setNote('找到了！謝謝你。');
+    else if (hs?.role === 'hidden' && !wasFound) setNote('哇，發現祕密了！');
+    else if (hs?.role === 'extra' && !wasFound) setNote('寶石發亮了，多了一份小禮物！');
     if (!wasFound && (hs?.role === 'treasure' || hs?.role === 'hidden')) {
       setReaction((r) => ({ pose: hs.role === 'treasure' ? 'celebrate' : 'starEyes', n: (r?.n ?? 0) + 1 }));
     }
@@ -128,6 +161,10 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
 
       <LocationScene snapshot={node.snapshot} hotspots={layout.hotspots} onTap={tap} tapped={found} panda={panda} />
 
+      {note && (
+        <p class="loc-note" role="status" data-testid="clue-text">{note}</p>
+      )}
+
       <section class="loc-panel" aria-label="朋友與請求">
         <div class="loc-row">
           <button
@@ -137,7 +174,7 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
             disabled={!progress || talked}
             onClick={() => {
               commit(talk(game.value, nodeId, now()));
-              setScript(talkScript(game.value, node, nodeId));
+              setScript(talkScript(game.value, node, nodeId, today));
             }}
           >
             說話
@@ -152,15 +189,11 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
         {layout.request.kind === 'find' ? (
           <div class="loc-request">
             <p>{friendName}：幫我找找場景裡藏著的小東西吧。</p>
-            <button
-              type="button"
-              class="loc-btn"
-              data-testid="request-find"
-              disabled={!progress || requestDone}
-              onClick={() => tap('request')}
-            >
-              {requestDone ? '已找到' : '找到了'}
-            </button>
+            {requestDone ? (
+              <p class="loc-muted" data-testid="request-found">已經找到啦，謝謝你。</p>
+            ) : (
+              <p class="loc-muted">點一點場景裡的亮點，就能找到它。</p>
+            )}
           </div>
         ) : (
           <div class="loc-request">
@@ -200,6 +233,20 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
         )}
         {layout.secret.kind === 'puzzle' && puzzleOpen && (
           <fieldset class="loc-puzzle" disabled={secretDone}>
+            {clueSpots.length > 0 && (
+              <div class="loc-clues" data-testid="clue-list" aria-label="找到的線索">
+                <p class="loc-muted">
+                  {foundClues.length < clueSpots.length
+                    ? `線索：找到 ${foundClues.length} / ${clueSpots.length}（點場景裡的亮點）`
+                    : '三個線索都找到了：'}
+                </p>
+                <ul>
+                  {foundClues.map((h) => (
+                    <li key={h.id}>{h.clue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <PuzzleView
               key={nodeId}
               puzzle={layout.secret.puzzle}
@@ -218,23 +265,32 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
         )}
         {playing && (
           <Minigame
-            kind={minigameKind(s.seed, today)}
+            kind={minigameKind(s.seed, nodeId, today)}
             onFinish={(score) => {
-              setPlaying(false);
-              commit(finishMinigame(game.value, nodeId, minigameKind(s.seed, today), score, now()));
+              // 先結算獎勵；有成績時留著結果卡，等她按「好」才關閉。
+              commit(finishMinigame(game.value, nodeId, minigameKind(s.seed, nodeId, today), score, now()));
+              if (score === null) setPlaying(false);
             }}
+            onClose={() => setPlaying(false)}
           />
         )}
       </section>
 
+      {!canComplete && progress && (
+        <p class="loc-muted loc-complete-hint" role="status" data-testid="complete-hint">
+          {missing.length > 0 ? `還差：${missing.join('、')}` : '元氣不夠，回家照顧一下再來。'}
+        </p>
+      )}
       <button
         type="button"
         class="loc-btn loc-complete"
         data-testid="complete-button"
         disabled={!canComplete}
         onClick={() => {
-          commit(complete(game.value, nodeId, now()));
-          closeOverlay();
+          const before = game.value;
+          const out = complete(before, nodeId, now());
+          commit(out);
+          if (out.state !== before) closeOverlay();
         }}
       >
         完成（元氣 −{COMPLETE_ENERGY_COST}）

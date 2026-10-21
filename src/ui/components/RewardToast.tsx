@@ -41,6 +41,7 @@ function textsOf(e: GameEvent): string[] {
       const name = FRIENDS.find((f) => f.id === e.friendId)?.name ?? e.friendId;
       const out = [`${name} 好感度升到 Lv${e.level}！`];
       if (FURNITURE_LEVELS.has(e.level)) out.push('解鎖專屬家具');
+      if (e.level >= 2 && e.level <= 5) out.push('新故事可以看了（相簿 → 朋友卡）');
       return out;
     }
     default:

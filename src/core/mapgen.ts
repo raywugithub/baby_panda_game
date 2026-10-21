@@ -1,7 +1,7 @@
 import type { Ability, GameState, HandmadeId, LocationSnapshot, MapNode } from './state';
 import type { Outcome } from './events';
 import { mulberry32, hash, chance } from './rng';
-import { generateSnapshot } from './locationgen';
+import { generateSnapshot, nameOf } from './locationgen';
 import { currentStage, abilitiesForStage } from './growth';
 
 export { GENERATOR_VERSION } from './locationgen';
@@ -30,7 +30,7 @@ export function spawnChildren(s: GameState, parentId: number): Outcome {
     const seed = hash(s.seed, id);
     const snapshot: LocationSnapshot = nextHandmade
       ? { kind: 'handmade', handmadeId: nextHandmade }
-      : generateSnapshot(seed, IMPLEMENTED_ABILITIES);
+      : generateSnapshot(seed, IMPLEMENTED_ABILITIES, [...s.map.nodes, ...children].map(n => nameOf(n.snapshot)));
     children.push({
       id, parentId, seed, status: 'open', secretFound: false,
       snapshot, progress: null, lastCompletedDate: null,
