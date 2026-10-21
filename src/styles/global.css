@@ -2242,3 +2242,39 @@ button {
 .loc-rest { align-items: center; justify-content: center; text-align: center; min-height: 60vh; }
 .loc-rest-panda svg { display: block; }
 .loc-rest-text { font-size: 18px; line-height: 1.6; }
+
+/* 地點熱點：暖色光環，未找到時輕輕呼吸；找到後變成勾勾（尊重 reduced-motion）。 */
+.loc-hotspot-dot {
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #FFF6D6 0%, #F6C56B 55%, #E9913D 100%);
+  border: 2.5px solid #6B4F3A;
+  box-shadow: 0 0 0 4px rgba(255, 246, 214, 0.55), 0 2px 6px rgba(42, 40, 38, 0.35);
+  color: #6B4F3A;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.loc-hotspot[data-done="true"] .loc-hotspot-dot {
+  background: #FBF7F0;
+  border-color: #8A5A24;
+  box-shadow: 0 0 0 3px rgba(138, 90, 36, 0.25);
+  color: #8A5A24;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loc-hotspot:not([data-done="true"]) .loc-hotspot-dot {
+    animation: loc-hotspot-pulse 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes loc-hotspot-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(255, 246, 214, 0.55), 0 2px 6px rgba(42, 40, 38, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 246, 214, 0.2), 0 2px 6px rgba(42, 40, 38, 0.35); }
+}

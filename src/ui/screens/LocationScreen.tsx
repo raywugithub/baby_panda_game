@@ -1,7 +1,7 @@
 import type { JSX } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { game, commit } from '../store';
-import { closeOverlay, openOverlay, type Overlay } from '../nav';
+import { closeOverlay, goTab, openOverlay, type Overlay } from '../nav';
 import { now } from '../../platform/clock';
 import { localDate } from '../../core/time';
 import { canEnter } from '../../core/mapgen';
@@ -12,20 +12,19 @@ import {
 import { minigameOffered, minigameKind } from '../../core/minigames';
 import { nameOf } from '../../core/locationgen';
 import { currentStage } from '../../core/growth';
-import { Panda } from '../../panda/Panda';
+import { Panda, type PandaPose } from '../../panda/Panda';
 import type { FriendId, GameState, MapNode } from '../../core/state';
-import { LocationScene } from '../../art/scenes/LocationScene';
+import { LocationScene, PANDA_PX } from '../../art/scenes/LocationScene';
 import { Dialogue } from '../components/Dialogue';
 import { PuzzleView } from '../components/PuzzleView';
 import { Minigame } from '../components/Minigame';
-import { FRIENDS } from '../../content/friends';
+import { FRIENDS, PASSERBY_CHAT } from '../../content/friends';
 import { FOODS, FOOD_IDS } from '../../content/foods';
 import { HANDMADE } from '../../content/locations/handmade';
 import type { DialogueScript } from '../../content/story';
 
 const ENTER_MIN_ENERGY = 25;
 const COMPLETE_ENERGY_COST = 25;
-const PASSERBY_LINE = '這裡的風很舒服，你也來曬曬太陽嗎？';
 
 function residentOf(node: MapNode): FriendId | 'passerby' {
   return node.snapshot.kind === 'handmade' ? HANDMADE[node.snapshot.handmadeId].resident : node.snapshot.resident;
@@ -40,9 +39,11 @@ function talkScript(s: GameState, node: MapNode, nodeId: number): DialogueScript
   const id = `loc-${nodeId}-talk`;
   if (node.snapshot.kind === 'handmade') return { id, lines: HANDMADE[node.snapshot.handmadeId].talk };
   const resident = residentOf(node);
-  if (resident === 'passerby') return { id, lines: [{ speaker: 'passerby', text: PASSERBY_LINE }] };
+  if (resident === 'passerby') return { id, lines: [{ speaker: 'passerby', text: PASSERBY_CHAT }] };
   const level = levelOf(s.friends[resident].points);
-  const line = FRIENDS.find((f) => f.id === resident)!.chat[(level - 1) % 10];
+  const chat = FRIENDS.find((f) => f.id === resident)?.chat ?? [];
+  // 依等級輪流取台詞；台詞表為空時退回路人閒聊，避免取到 undefined。
+  const line = chat.length > 0 ? chat[(level - 1) % chat.length] : PASSERBY_CHAT;
   return { id, lines: [{ speaker: resident, text: line }] };
 }
 
@@ -64,6 +65,13 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
   const [puzzleOpen, setPuzzleOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
+  // 熊貓的反應動作：找到寶物或祕密時短暫開心，之後回到行走。
+  const [reaction, setReaction] = useState<{ pose: PandaPose; n: number } | null>(null);
+  useEffect(() => {
+    if (reaction === null) return;
+    const t = setTimeout(() => setReaction(null), 1400);
+    return () => clearTimeout(t);
+  }, [reaction]);
 
   // 進入只做一次；能力不足或體力不夠時不進入（見 cannotEnter 的休息畫面）。
   useEffect(() => {
@@ -92,8 +100,24 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
   const ownedFood = FOOD_IDS.filter((id) => (s.inventory[id] ?? 0) > 0);
 
   const tap = (hotspotId: string): void => {
+    const hs = layout.hotspots.find((h) => h.id === hotspotId);
+    const wasFound = found.includes(hotspotId);
     commit(tapHotspot(game.value, nodeId, hotspotId, now()));
+    if (!wasFound && (hs?.role === 'treasure' || hs?.role === 'hidden')) {
+      setReaction((r) => ({ pose: hs.role === 'treasure' ? 'celebrate' : 'starEyes', n: (r?.n ?? 0) + 1 }));
+    }
   };
+  const pandaPose: PandaPose = reaction?.pose ?? 'walk';
+  const panda = (
+    <Panda
+      pose={pandaPose}
+      stage={currentStage(s)}
+      outfit={s.equipped.outfit}
+      pendants={s.equipped.pendants}
+      chainLinks={s.chainLinks}
+      size={PANDA_PX}
+    />
+  );
 
   return (
     <div class="loc" data-testid="location-screen">
@@ -102,7 +126,7 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
         <p class="loc-sub">{friendName} · 今天：{layout.event}</p>
       </header>
 
-      <LocationScene snapshot={node.snapshot} hotspots={layout.hotspots} onTap={tap} tapped={found} />
+      <LocationScene snapshot={node.snapshot} hotspots={layout.hotspots} onTap={tap} tapped={found} panda={panda} />
 
       <section class="loc-panel" aria-label="朋友與請求">
         <div class="loc-row">
@@ -179,7 +203,10 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
             <PuzzleView
               key={nodeId}
               puzzle={layout.secret.puzzle}
-              onSolved={() => commit(solveSecret(game.value, nodeId, now()))}
+              onSolved={() => {
+                commit(solveSecret(game.value, nodeId, now()));
+                setReaction((r) => ({ pose: 'starEyes', n: (r?.n ?? 0) + 1 }));
+              }}
             />
           </fieldset>
         )}
@@ -216,6 +243,12 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
   );
 }
 
+/** 回家：關閉地點並回到家分頁。 */
+function goHome(): void {
+  closeOverlay();
+  goTab('home');
+}
+
 function RestPanel({ message }: { message: string }): JSX.Element {
   const s = game.value;
   return (
@@ -224,7 +257,7 @@ function RestPanel({ message }: { message: string }): JSX.Element {
         <Panda pose="yawn" stage={currentStage(s)} outfit={s.equipped.outfit} pendants={s.equipped.pendants} chainLinks={s.chainLinks} size={200} />
       </div>
       <p class="loc-rest-text">{message}</p>
-      <button type="button" class="loc-btn" onClick={closeOverlay}>回家</button>
+      <button type="button" class="loc-btn" onClick={goHome}>回家</button>
     </div>
   );
 }

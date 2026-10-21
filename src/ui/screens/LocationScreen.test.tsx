@@ -2,7 +2,7 @@ import { render, fireEvent } from '@testing-library/preact';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LocationScreen } from './LocationScreen';
 import { game, eventQueue } from '../store';
-import { overlay } from '../nav';
+import { overlay, tab } from '../nav';
 import { fresh, handmadeNode, NOW, TODAY } from '../../core/test-helpers';
 import { layoutFor } from '../../core/location';
 import { minigameOffered } from '../../core/minigames';
@@ -33,13 +33,21 @@ describe('LocationScreen', () => {
     expect(nodeOf(id).progress).toBeNull();
   });
 
-  it('the 回家 button on the rest message closes the overlay', () => {
+  it('the 回家 button on the rest message closes the overlay and goes home', () => {
     game.value = { ...game.value, energy: 10 };
     const id = handmadeNode(game.value, 'bamboo-path').id;
     overlay.value = { kind: 'location', nodeId: id };
+    tab.value = 'map';
     const { getByRole } = render(<LocationScreen overlay={{ kind: 'location', nodeId: id }} />);
     fireEvent.click(getByRole('button', { name: '回家' }));
     expect(overlay.value).toBeNull();
+    expect(tab.value).toBe('home');
+  });
+
+  it('the non-rest view renders the panda standing in the scene', () => {
+    const id = handmadeNode(game.value, 'bamboo-path').id;
+    const { getByTestId } = render(<LocationScreen overlay={{ kind: 'location', nodeId: id }} />);
+    expect(getByTestId('scene-panda').querySelector('svg')).toBeTruthy();
   });
 
   it('entering at full energy records today progress', () => {

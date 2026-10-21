@@ -85,3 +85,6 @@ export const FRIENDS: FriendDef[] = [
 ];
 
 export const FRIEND_IDS: FriendId[] = FRIENDS.map(f => f.id);
+
+/** 路人（居民不是朋友）的閒聊台詞。 */
+export const PASSERBY_CHAT = '這裡的風很舒服，你也來曬曬太陽嗎？';

@@ -5,7 +5,6 @@ import { HANDMADE } from '../../content/locations/handmade';
 import { HANDMADE_SCENES, TERRAIN_SCENES } from './terrains';
 import { WEATHER_OVERLAYS } from './weather';
 import { LANDMARK_ART } from '../landmarks';
-import { PAL } from '../items/primitives';
 
 /** 各地形的地面線（場景座標 y）：地標底部中心站在這條線上。 */
 const GROUND_Y: Record<Terrain, number> = { bamboo: 262, beach: 300, cloud: 318, snow: 330, mushroom: 300, starlake: 276 };
@@ -13,6 +12,11 @@ const LANDMARK_SIZE = 150;
 
 function landmarkAt(terrain: Terrain): { x: number; y: number } {
   return { x: 180, y: GROUND_Y[terrain] };
+}
+
+/** 場景的地面線 y（場景座標）；手工地點依其地形。 */
+function groundOf(snap: LocationSnapshot): number {
+  return GROUND_Y[snap.kind === 'handmade' ? HANDMADE[snap.handmadeId].terrain : snap.terrain];
 }
 
 /** 場景鍵：生成地點為 `${terrain}-${layout}`；手工地點取其地形、版型 0。 */
@@ -53,19 +57,25 @@ const ROLE_LABEL: Record<HotspotDef['role'], string> = {
 };
 
 const HOTSPOT_PX = 44;
+/** 熊貓在場景中的水平位置（場景座標）與寬度占場景的比例。 */
+const PANDA_X = 96;
+export const PANDA_PX = 104;
 
 export interface LocationSceneProps {
   snapshot: LocationSnapshot;
   hotspots: HotspotDef[];
   onTap: (id: string) => void;
   tapped: string[];
+  /** 站在地面線上的熊貓（由呼叫端以 <Panda> 提供）；略過時場景只有地標。 */
+  panda?: ComponentChildren;
 }
 
 /**
- * 地點場景：外框鎖定 3/4，SVG 以 xMidYMid meet 等比縮放，熱點以百分比定位，
- * 因此熱點會和美術上的位置對齊。外框 touch-action: none，避免瀏覽器搶走拖曳。
+ * 地點場景：外框鎖定 3/4，SVG 以 xMidYMid meet 等比縮放，熱點與熊貓以百分比定位，
+ * 因此會和美術上的位置對齊。外框 touch-action: none，避免瀏覽器搶走拖曳。
  */
-export function LocationScene({ snapshot, hotspots, onTap, tapped }: LocationSceneProps): JSX.Element {
+export function LocationScene({ snapshot, hotspots, onTap, tapped, panda }: LocationSceneProps): JSX.Element {
+  const groundY = groundOf(snapshot);
   return (
     <div
       data-testid="location-scene"
@@ -82,12 +92,29 @@ export function LocationScene({ snapshot, hotspots, onTap, tapped }: LocationSce
       >
         <LocationArtwork snapshot={snapshot} />
       </svg>
+      {panda !== undefined && (
+        <div
+          data-testid="scene-panda"
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: `${(PANDA_X / SCENE_W) * 100}%`,
+            top: `${(groundY / SCENE_H) * 100}%`,
+            transform: 'translate(-50%, -88%)',
+            width: `${PANDA_PX}px`,
+            pointerEvents: 'none',
+          }}
+        >
+          {panda}
+        </div>
+      )}
       {hotspots.map(h => {
         const done = tapped.includes(h.id);
         return (
           <button
             key={h.id}
             type="button"
+            class="loc-hotspot"
             data-testid={`hotspot-${h.id}`}
             data-done={done ? 'true' : undefined}
             aria-label={done ? `${ROLE_LABEL[h.role]}（已找到）` : ROLE_LABEL[h.role]}
@@ -108,23 +135,7 @@ export function LocationScene({ snapshot, hotspots, onTap, tapped }: LocationSce
               justifyContent: 'center',
             }}
           >
-            <span
-              aria-hidden="true"
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                background: done ? PAL.goldLight : 'rgba(255,255,255,0.78)',
-                border: `2px solid ${PAL.brown}`,
-                color: PAL.brown,
-                fontSize: '14px',
-                fontWeight: 700,
-                lineHeight: '20px',
-                textAlign: 'center',
-              }}
-            >
-              {done ? '✓' : ''}
-            </span>
+            <span aria-hidden="true" class="loc-hotspot-dot">{done ? '✓' : ''}</span>
           </button>
         );
       })}
