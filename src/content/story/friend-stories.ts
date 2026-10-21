@@ -27,7 +27,7 @@ export const FRIEND_STORIES: Record<string, DialogueScript> = Object.fromEntries
     { speaker: 'mianhua', text: '這樣算不算很不合格的郵差？我自己也覺得有點丟臉。' },
   ]),
   segment('mianhua', 3, [
-    { speaker: 'mianhua', text: '阿公說他眼睛還很好，只是懶得拆信，因為拆了就要回信。' },
+    { speaker: 'mianhua', text: '阿公說他不是不想拆，是怕拆完就要回信，回信要寫好久。' },
     { speaker: 'panda', pose: 'shy', text: '回信？那你不是要跑兩趟？' },
     { speaker: 'mianhua', text: '我第一次發現，送信不只是跑，還要等。' },
     { speaker: 'mianhua', text: '所以我決定陪他坐一下，等他寫完，順便曬曬太陽。' },
@@ -41,6 +41,7 @@ export const FRIEND_STORIES: Record<string, DialogueScript> = Object.fromEntries
     { speaker: 'mianhua', text: '送信的時候要跑，等回信的時候要坐，我現在兩樣都會了。' },
   ]),
   segment('mianhua', 5, [
+    { speaker: 'mianhua', text: '我把回信一路背下山、寄出去，三天後，小美的回信寄到了！' },
     { speaker: 'mianhua', text: '小美的回信寄到了！阿公笑得眼睛都瞇起來了。' },
     { speaker: 'mianhua', text: '他說這是今年最好的信，我說那是因為我今天跑得特別快。' },
     { speaker: 'panda', pose: 'starEyes', text: '你看，我的項圈也在閃，好像在替你們高興。' },
@@ -54,7 +55,7 @@ export const FRIEND_STORIES: Record<string, DialogueScript> = Object.fromEntries
     { speaker: 'juzi', text: '帳本上的數字紅紅的，我只好把折扣寫成八折、再八折。' },
     { speaker: 'panda', pose: 'stare', text: '八折再八折不是虧更多嗎？' },
     { speaker: 'juzi', text: '所以我才說，只賣給心情好的人。開玩笑的啦。' },
-    { speaker: 'juzi', text: '其實我只是有點想念以前那些天天來的客人。' },
+    { speaker: 'juzi', text: '其實我只是有點想念以前天天來的客人，還有櫃台底下那顆金色的糖。' },
   ]),
   segment('juzi', 2, [
     { speaker: 'juzi', text: '櫃台底下那顆金色的糖，你還記得吧？我說過要等你猜。' },
@@ -81,7 +82,7 @@ export const FRIEND_STORIES: Record<string, DialogueScript> = Object.fromEntries
     { speaker: 'juzi', text: '金色的糖，我終於做出來了，雖然形狀還是歪的。' },
     { speaker: 'juzi', text: '奶奶留的紙條寫著：「糖不是為了甜，是為了讓人想回來。」' },
     { speaker: 'panda', pose: 'starEyes', text: '那我下次來，要帶什麼回去？' },
-    { speaker: 'juzi', text: '帶你的項圈來，我幫你把扣環擦亮，這次不收錢。' },
+    { speaker: 'juzi', text: '帶你的項圈來，我替它串一顆金糖色的小珠子，這次不收錢。' },
     { speaker: 'juzi', text: '不過金糖只給有耐心的人，你先乖乖排隊。' },
   ]),
 
@@ -119,7 +120,7 @@ export const FRIEND_STORIES: Record<string, DialogueScript> = Object.fromEntries
     { speaker: 'manman', text: '我在最後寫了一句：「星星不會熄，只會換個地方亮。」' },
     { speaker: 'panda', pose: 'starEyes', text: '所以我的項圈上那顆亮光，也是他的星星嗎？' },
     { speaker: 'manman', text: '答案要你自己走下去找。慢慢來，故事不會跑。' },
-    { speaker: 'manman', text: '這一章，我寫的是你。' },
+    { speaker: 'manman', text: '這一章，是我寫給你的。謝謝你一直陪著我慢慢走。' },
   ]),
 
   // 咕嚕：一台說不出話的機器，和一個很想有人來的工作室
