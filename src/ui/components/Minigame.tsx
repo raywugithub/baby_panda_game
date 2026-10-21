@@ -127,6 +127,7 @@ export function Minigame({ kind, onFinish, onClose }: MinigameProps): JSX.Elemen
   onFinishRef.current = onFinish;
   const hitsRef = useRef(0);
   const areaRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const world = useRef<{
     targets: Target[];
     nextId: number;
@@ -140,6 +141,8 @@ export function Minigame({ kind, onFinish, onClose }: MinigameProps): JSX.Elemen
   const timers = useRef<{ raf: number; deadline: number }>({ raf: 0, deadline: 0 });
 
   useEffect(() => {
+    // 遊戲區在手機上常在畫面下方：開始時捲到中間，才看得到也點得到。
+    sectionRef.current?.scrollIntoView?.({ block: 'center' });
     const rand = mulberry32(randomSeed());
     const startedAt = now();
     let last = startedAt;
@@ -385,7 +388,7 @@ export function Minigame({ kind, onFinish, onClose }: MinigameProps): JSX.Elemen
   const tNow = now();
 
   return (
-    <section class={`minigame minigame--${kind}`} data-kind={kind} aria-label={game.name}>
+    <section ref={sectionRef} class={`minigame minigame--${kind}`} data-kind={kind} aria-label={game.name}>
       <header class="minigame-head">
         <h2 class="minigame-title">{game.name}</h2>
         <p class="minigame-goal">{cfg.goal}</p>
