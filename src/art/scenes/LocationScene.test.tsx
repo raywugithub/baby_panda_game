@@ -1,6 +1,8 @@
 import { render, fireEvent } from '@testing-library/preact';
 import { describe, it, expect, vi } from 'vitest';
-import { LocationScene, sceneKey } from './LocationScene';
+import { LocationScene, sceneKey, pandaBox, PANDA_SIZE } from './LocationScene';
+import { dailyLayout, EXTRA_SLOT, SCENE_W, SCENE_H, type HotspotDef } from '../../core/locationgen';
+import type { Terrain, LocationSnapshot } from '../../core/state';
 import { TERRAIN_SCENES, WEATHER_OVERLAYS, HANDMADE_SCENES } from './terrains';
 import { LANDMARK_ART } from '../landmarks';
 import { LANDMARKS } from '../../content/locations';
@@ -61,3 +63,55 @@ describe('LocationScene', () => {
     expect(parseFloat((getByTestId('hotspot-f0') as HTMLElement).style.top)).toBeCloseTo(79.167, 2);
   });
 });
+
+describe('panda placement', () => {
+  const TERRAINS: Terrain[] = ['bamboo', 'beach', 'cloud', 'snow', 'mushroom', 'starlake'];
+  const HOTSPOT_R = 22;
+  const GAP = 8;
+
+  it('stands in the foreground band (or on the far hill for the lake) and inside the scene', () => {
+    for (const terrain of TERRAINS) {
+      const s = { ...snap, terrain } as LocationSnapshot;
+      const b = pandaBox(s);
+      expect(b.left).toBeGreaterThanOrEqual(0);
+      expect(b.right).toBeLessThanOrEqual(SCENE_W);
+      if (terrain === 'starlake') expect(b.bottom).toBeLessThan(300);
+      else expect(b.bottom).toBeGreaterThanOrEqual(380);
+      expect(b.bottom).toBeLessThanOrEqual(SCENE_H);
+    }
+  });
+
+  it('renders the panda anchored at its computed box with a ground shadow', () => {
+    const { getByTestId } = render(
+      <LocationScene snapshot={snap} hotspots={hotspots} onTap={() => {}} tapped={[]} panda={<i />} />,
+    );
+    const el = getByTestId('scene-panda') as HTMLElement;
+    const b = pandaBox(snap);
+    expect(parseFloat(el.style.left)).toBeCloseTo((b.left / SCENE_W) * 100, 3);
+    expect(parseFloat(el.style.top)).toBeCloseTo((b.top / SCENE_H) * 100, 3);
+    expect(parseFloat(el.style.width)).toBeCloseTo((PANDA_SIZE / SCENE_W) * 100, 3);
+    expect(el.querySelector('.loc-panda-shadow')).toBeTruthy();
+  });
+
+  it('no hotspot overlaps the panda box (with an 8-unit gap) for any terrain or layout', () => {
+    const seeds = Array.from({ length: 60 }, (_, i) => i + 1);
+    for (const terrain of TERRAINS) {
+      const s = { ...snap, terrain } as LocationSnapshot;
+      const b = pandaBox(s);
+      const extra: HotspotDef = { id: 'extra', x: EXTRA_SLOT[0], y: EXTRA_SLOT[1], role: 'extra' };
+      const sets: HotspotDef[][] = [[extra]];
+      for (const seed of seeds) {
+        const node = { id: seed, parentId: null, seed: seed * 977, status: 'open' as const, secretFound: false, snapshot: s, progress: null, lastCompletedDate: null };
+        sets.push(dailyLayout(node, '2026-10-21').hotspots);
+      }
+      for (const hs of sets) {
+        for (const h of hs) {
+          const inside = h.x > b.left - GAP - HOTSPOT_R && h.x < b.right + GAP + HOTSPOT_R
+            && h.y > b.top - GAP - HOTSPOT_R && h.y < b.bottom + GAP + HOTSPOT_R;
+          expect({ terrain, id: h.id, inside }).toEqual({ terrain, id: h.id, inside: false });
+        }
+      }
+    }
+  });
+});
+

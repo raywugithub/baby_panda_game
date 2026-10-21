@@ -81,7 +81,10 @@ const PUZZLE_KINDS: readonly PuzzleKind[] = ['shadow', 'sequence', 'diff', 'code
 
 /** 六個固定熱點位置（場景座標） */
 // 熱點只放在地面（草地、沙灘、雲層、雪地的下方），避免浮在空中；地標站在各地形的地面線上（見 LocationScene）。
-const SLOTS: readonly [number, number][] = [[56, 352], [176, 374], [300, 352], [96, 426], [236, 430], [316, 414]];
+// 熱點避開熊貓站立的區域（見 LocationScene 的 pandaBox，含 8 單位間距）；右側與底部為主。
+const SLOTS: readonly [number, number][] = [[222, 318], [300, 300], [250, 392], [326, 396], [150, 450], [262, 446]];
+/** 寶石墜飾額外寶物的位置（同樣避開熊貓與其他熱點） */
+export const EXTRA_SLOT: readonly [number, number] = [318, 452];
 
 /** 密碼線索模板；{d} 為密碼第 i 位數字 */
 const CLUE_TEMPLATES = ['樹洞裡的松鼠藏了 {d} 顆栗子', '石頭上有 {d} 道刻痕', '草叢裡的蝴蝶停了 {d} 次'];

@@ -14,11 +14,6 @@ function landmarkAt(terrain: Terrain): { x: number; y: number } {
   return { x: 180, y: GROUND_Y[terrain] };
 }
 
-/** 場景的地面線 y（場景座標）；手工地點依其地形。 */
-function groundOf(snap: LocationSnapshot): number {
-  return GROUND_Y[snap.kind === 'handmade' ? HANDMADE[snap.handmadeId].terrain : snap.terrain];
-}
-
 /** 場景鍵：生成地點為 `${terrain}-${layout}`；手工地點取其地形、版型 0。 */
 export function sceneKey(snap: LocationSnapshot): `${Terrain}-${0 | 1}` {
   return snap.kind === 'handmade' ? `${HANDMADE[snap.handmadeId].terrain}-0` : `${snap.terrain}-${snap.layout}`;
@@ -59,7 +54,16 @@ const ROLE_LABEL: Record<HotspotDef['role'], string> = {
 const HOTSPOT_PX = 44;
 /** 熊貓在場景中的水平位置（場景座標）與寬度占場景的比例。 */
 const PANDA_X = 96;
-export const PANDA_PX = 104;
+/** 熊貓的繪製邊長（場景單位）；腳底在方框下緣。 */
+export const PANDA_SIZE = 170;
+/** 各地形前景站立的腳底 y；水面（星湖）改站在遠方的山坡上。 */
+const PANDA_FOOT_Y: Record<Terrain, number> = { bamboo: 412, beach: 412, cloud: 412, snow: 412, mushroom: 412, starlake: 292 };
+
+/** 熊貓方框（場景單位）：左上 (left, top)、邊長 PANDA_SIZE。測試與佈局共用。 */
+export function pandaBox(snap: LocationSnapshot): { left: number; top: number; right: number; bottom: number } {
+  const foot = PANDA_FOOT_Y[snap.kind === 'handmade' ? HANDMADE[snap.handmadeId].terrain : snap.terrain];
+  return { left: PANDA_X - PANDA_SIZE / 2, top: foot - PANDA_SIZE, right: PANDA_X + PANDA_SIZE / 2, bottom: foot };
+}
 
 export interface LocationSceneProps {
   snapshot: LocationSnapshot;
@@ -75,7 +79,7 @@ export interface LocationSceneProps {
  * 因此會和美術上的位置對齊。外框 touch-action: none，避免瀏覽器搶走拖曳。
  */
 export function LocationScene({ snapshot, hotspots, onTap, tapped, panda }: LocationSceneProps): JSX.Element {
-  const groundY = groundOf(snapshot);
+  const box = pandaBox(snapshot);
   return (
     <div
       data-testid="location-scene"
@@ -95,17 +99,19 @@ export function LocationScene({ snapshot, hotspots, onTap, tapped, panda }: Loca
       {panda !== undefined && (
         <div
           data-testid="scene-panda"
+          data-foot-y={box.bottom}
           aria-hidden="true"
           style={{
             position: 'absolute',
-            left: `${(PANDA_X / SCENE_W) * 100}%`,
-            top: `${(groundY / SCENE_H) * 100}%`,
-            transform: 'translate(-50%, -88%)',
-            width: `${PANDA_PX}px`,
+            left: `${(box.left / SCENE_W) * 100}%`,
+            top: `${(box.top / SCENE_H) * 100}%`,
+            width: `${(PANDA_SIZE / SCENE_W) * 100}%`,
+            aspectRatio: '1 / 1',
             pointerEvents: 'none',
           }}
         >
-          {panda}
+          <div class="loc-panda-shadow" />
+          <div class="loc-panda">{panda}</div>
         </div>
       )}
       {hotspots.map(h => {

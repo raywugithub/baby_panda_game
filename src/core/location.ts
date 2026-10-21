@@ -1,6 +1,6 @@
 import type { FriendId, GameState, LocationProgress, MapNode } from './state';
 import type { GameEvent, Outcome, Reward } from './events';
-import { dailyLayout, nameOf, terrainOf, type HotspotDef, type LocationLayout, type TreasureReward } from './locationgen';
+import { dailyLayout, EXTRA_SLOT, nameOf, terrainOf, type HotspotDef, type LocationLayout, type TreasureReward } from './locationgen';
 import { canEnter, ensureEnterable, spawnChildren } from './mapgen';
 import { ingredientDropChance, pendantModifiers } from './pendants';
 import { localDate } from './time';
@@ -27,7 +27,7 @@ export function layoutFor(s: GameState, nodeId: number, date: string): LocationL
   if (!node) throw new Error(`node not found: ${nodeId}`);
   const base = dailyLayout(node, date);
   if (!pendantModifiers(s).extraTreasure.includes(terrainOf(node.snapshot))) return base;
-  const extra: HotspotDef = { id: 'extra', role: 'extra', reward: { kind: 'starSand', amount: 10 }, x: 300, y: 430 };
+  const extra: HotspotDef = { id: 'extra', role: 'extra', reward: { kind: 'starSand', amount: 10 }, x: EXTRA_SLOT[0], y: EXTRA_SLOT[1] };
   return { ...base, hotspots: [...base.hotspots, extra] };
 }
 

@@ -14,7 +14,7 @@ import { nameOf } from '../../core/locationgen';
 import { currentStage } from '../../core/growth';
 import { Panda, type PandaPose } from '../../panda/Panda';
 import type { FriendId, GameState, MapNode } from '../../core/state';
-import { LocationScene, PANDA_PX } from '../../art/scenes/LocationScene';
+import { LocationScene, PANDA_SIZE } from '../../art/scenes/LocationScene';
 import { Dialogue } from '../components/Dialogue';
 import { PuzzleView } from '../components/PuzzleView';
 import { Minigame } from '../components/Minigame';
@@ -115,7 +115,7 @@ function LocationView({ nodeId }: { nodeId: number }): JSX.Element {
       outfit={s.equipped.outfit}
       pendants={s.equipped.pendants}
       chainLinks={s.chainLinks}
-      size={PANDA_PX}
+      size={PANDA_SIZE}
     />
   );
 
