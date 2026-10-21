@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect, vi } from 'vitest';
-import { savePhoto, listPhotos, deletePhoto } from './photos';
+import { savePhoto, listPhotos, deletePhoto, listPhotoCards, getPhotoBlob } from './photos';
+import * as thumbModule from './thumb';
 import * as idb from './idb';
 
 const rec = (i: number) => ({ id: `p${i}`, createdAt: i, kind: 'photo' as const, title: '', blob: new Blob(['x']) });
@@ -52,5 +53,37 @@ describe('photo storage', () => {
     expect(back).toHaveProperty('blob');
     expect(back.kind).toBe('commemorative');
     await deletePhoto('old-1');
+  });
+});
+
+describe('album thumbnails', () => {
+  it('saves a small thumbnail with the photo and lists cards without full bytes', async () => {
+    const spy = vi.spyOn(thumbModule, 'makeThumb').mockResolvedValue(new Blob(['t'], { type: 'image/jpeg' }));
+    await savePhoto({ id: 'th-1', createdAt: 7000, kind: 'photo', title: 'x', blob: new Blob(['full-image-bytes'], { type: 'image/png' }) });
+    const raw = await idb.idbGet<Record<string, unknown>>('photos', 'th-1');
+    expect((raw!.thumbBytes as ArrayBuffer).byteLength).toBe(1);
+    const card = (await listPhotoCards()).find((c) => c.id === 'th-1')!;
+    expect(card.thumb!.size).toBe(1);
+    expect(card.thumb!.type).toBe('image/jpeg');
+    expect(card).not.toHaveProperty('blob');
+    expect((await getPhotoBlob('th-1'))!.size).toBe('full-image-bytes'.length);
+    spy.mockRestore();
+  });
+  it('backfills a thumbnail for old records once, then reuses it', async () => {
+    await idb.idbPut('photos', 'old-th', { id: 'old-th', createdAt: 8000, kind: 'photo', title: 'o', bytes: new Uint8Array([1, 2, 3]).buffer, type: 'image/png' });
+    const spy = vi.spyOn(thumbModule, 'makeThumb').mockResolvedValue(new Blob(['tt'], { type: 'image/jpeg' }));
+    expect((await listPhotoCards()).find((c) => c.id === 'old-th')!.thumb!.size).toBe(2);
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockClear();
+    expect((await listPhotoCards()).find((c) => c.id === 'old-th')!.thumb!.size).toBe(2);
+    expect(spy).not.toHaveBeenCalled();
+    expect((await getPhotoBlob('old-th'))!.size).toBe(3);
+    spy.mockRestore();
+  });
+  it('keeps legend cards text and has no thumb for them', async () => {
+    await idb.idbPut('photos', 'legend-5', { id: 'legend-5', kind: 'legend', title: 'L', text: 'hello', createdAt: 1 });
+    const c = (await listPhotoCards()).find((x) => x.id === 'legend-5')!;
+    expect(c.text).toBe('hello');
+    expect(c.thumb).toBeUndefined();
   });
 });

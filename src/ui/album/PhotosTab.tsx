@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'preact/hooks';
-import { listPhotos, deletePhoto, type PhotoRecord } from '../../platform/photos';
+import { listPhotoCards, getPhotoBlob, deletePhoto, type PhotoRecord, type PhotoCard } from '../../platform/photos';
 import { PHOTO_CAP } from '../../core/album';
 
 /** 傳說卡沒有圖片，只有標題與內文（text）；照片則帶 blob。 */
-type Card = Omit<PhotoRecord, 'blob'> & { blob?: Blob; text?: string };
-interface Shown { rec: Card; url: string | null }
+interface Shown { rec: PhotoCard; url: string | null }
 
 const KIND_LABEL: Record<PhotoRecord['kind'], string> = {
   photo: '熊貓照',
@@ -17,17 +16,18 @@ export function PhotosTab() {
   const [items, setItems] = useState<Shown[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState<Shown | null>(null);
+  const [fullUrl, setFullUrl] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
     const made: string[] = [];
-    listPhotos().then(recs => {
+    listPhotoCards().then(recs => {
       if (cancelled) return;
-      const shown = (recs as Card[]).map(rec => {
-        if (!rec.blob) return { rec, url: null };
-        const url = URL.createObjectURL(rec.blob);
+      const shown = recs.map(rec => {
+        if (!rec.thumb) return { rec, url: null };
+        const url = URL.createObjectURL(rec.thumb);
         made.push(url);
         return { rec, url };
       });
@@ -39,6 +39,23 @@ export function PhotosTab() {
       made.forEach(u => URL.revokeObjectURL(u));
     };
   }, [version]);
+
+  // 點開才讀完整大圖；關閉時釋放，避免同時佔用大量記憶體。
+  useEffect(() => {
+    setFullUrl(null);
+    if (!open || open.rec.kind === 'legend') return;
+    let cancelled = false;
+    let url: string | null = null;
+    getPhotoBlob(open.rec.id).then(b => {
+      if (cancelled || !b) return;
+      url = URL.createObjectURL(b);
+      setFullUrl(url);
+    });
+    return () => {
+      cancelled = true;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [open]);
 
   async function remove(s: Shown) {
     if (!window.confirm('要刪掉這張照片嗎？')) return;
@@ -74,7 +91,9 @@ export function PhotosTab() {
               onClick={() => setOpen(s)}
             >
               {s.url !== null ? (
-                <img src={s.url} alt="" />
+                <img src={s.url} alt="" loading="lazy" decoding="async" />
+              ) : s.rec.kind !== 'legend' ? (
+                <span class="album-legend-card" aria-hidden="true"><span class="album-legend-title">{s.rec.title || '照片'}</span></span>
               ) : (
                 <span class="album-legend-card" aria-hidden="true">
                   <span class="album-legend-title">{s.rec.title}</span>
@@ -89,8 +108,8 @@ export function PhotosTab() {
       {open && (
         <div class="album-photo-modal">
           <div class="album-photo-full" role="dialog" aria-label={open.rec.title}>
-            {open.url !== null ? (
-              <img src={open.url} alt={open.rec.title} />
+            {open.rec.kind !== 'legend' ? (
+              <img src={fullUrl ?? open.url ?? undefined} alt={open.rec.title} decoding="async" />
             ) : (
               <div class="album-legend-full">
                 <p class="album-legend-title">{open.rec.title}</p>

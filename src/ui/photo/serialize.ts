@@ -10,7 +10,20 @@ export function serializeForPhoto(svg: SVGSVGElement): string {
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
   clone.setAttribute('font-family', FONT_STACK);
-  return new XMLSerializer().serializeToString(clone);
+  return resolveCssVars(new XMLSerializer().serializeToString(clone), svg);
+}
+
+/**
+ * 序列化後的 SVG 以獨立圖片載入，讀不到頁面的 CSS 變數（var(--fur) 會變黑色）。
+ * 這裡把 var(--x) 換成頁面上實際算出的顏色（含 svg 自己的覆寫），沒有值時用備用值。
+ */
+export function resolveCssVars(text: string, scope: Element): string {
+  if (!text.includes('var(')) return text;
+  const cs = getComputedStyle(scope);
+  return text.replace(/var\(\s*(--[\w-]+)\s*(?:,\s*([^)]*?))?\s*\)/g, (m, name: string, fallback?: string) => {
+    const v = cs.getPropertyValue(name).trim();
+    return v || (fallback ? fallback.trim() : m);
+  });
 }
 
 export function assertInlineOnly(text: string): void {
