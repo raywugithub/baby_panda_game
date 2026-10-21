@@ -39,15 +39,25 @@ test('new game → hug → feed → complete 竹林小徑 → open gift box → 
       'pendant-bamboo': 1,
     },
   });
+  // 抱抱後心情從 70 升到 95；餵食後肚子從 70 升到 95。數值沒變代表操作沒生效，測試要失敗。
   await page.getByTestId('care-hug').click();
+  await expect(page.getByRole('meter', { name: '心情' })).toHaveAttribute('aria-valuenow', '95');
   await page.getByTestId('care-feed').click();
   await page.getByTestId('tray-food-bamboo-cake').dragTo(page.getByTestId('panda-mouth'));
+  await expect(page.getByRole('meter', { name: '肚子' })).toHaveAttribute('aria-valuenow', '95');
 
   await completeBambooPath(page);
 
+  // 禮盒獎勵落袋：背包物品數量加總 + 棉花糖增加（重複品會換成棉花糖）。
+  const rewardTotal = () => page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('panda.save')!);
+    return Object.values(s.inventory as Record<string, number>).reduce((a, b) => a + b, 0) + s.marshmallow;
+  });
+  const beforeBox = await rewardTotal();
   await page.getByTestId('tab-giftbox').click();
   await page.getByTestId('giftbox-open').click();
   await page.getByRole('button', { name: '好耶' }).click();
+  await expect.poll(rewardTotal).toBeGreaterThan(beforeBox);
 
   // 衣櫃的布置分段 → 擺放 → 點選清單中的家具（tray-<itemId>），會放進第一個空格。
   await page.getByTestId('tab-closet').click();
@@ -70,6 +80,7 @@ test('new game → hug → feed → complete 竹林小徑 → open gift box → 
 test('切到背景會立即寫入：完成地點後 visibilitychange hidden，重新載入後蓋章與元氣仍在', async ({ page }) => {
   await start(page, {});
   await completeBambooPath(page);
+  // 模擬切到背景：覆寫 visibilityState 為 hidden 並派發事件（與 persistence.spec.ts 相同做法）。
   await page.evaluate(() => {
     Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
     document.dispatchEvent(new Event('visibilitychange'));
@@ -77,9 +88,11 @@ test('切到背景會立即寫入：完成地點後 visibilitychange hidden，�
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('panda.save')!));
   expect(saved.completedCount).toBe(1);
   expect(saved.energy).toBe(75); // 完成地點扣 25 元氣
+  // 重新載入後（覆寫隨頁面消失）：蓋章與元氣都還在。
   await page.reload();
   await page.getByTestId('tab-map').click();
   await expect(page.getByTestId('stamp-1')).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('panda.save')!).energy)).toBe(75);
 });
 
 test('completing the third location opens chapter 1 automatically', async ({ page }) => {
