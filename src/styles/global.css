@@ -2173,3 +2173,72 @@ button {
     animation: none;
   }
 }
+
+/* 地點覆蓋層（LocationScreen） */
+.loc {
+  width: min(100%, 480px);
+  margin: 0 auto;
+  padding-bottom: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--ink);
+}
+
+.loc-head { text-align: center; }
+.loc-title { margin: 0; font-size: 22px; }
+.loc-sub { margin: 4px 0 0; font-size: 14px; color: #6E5F4F; }
+
+.loc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--fur);
+  box-sizing: border-box;
+}
+
+.loc-row,
+.loc-foods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.loc-request p { margin: 0 0 8px; line-height: 1.5; }
+.loc-muted { color: #6E5F4F; }
+.loc-hint { color: var(--amber); font-weight: 700; margin: 6px 0 0; }
+
+.loc-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 16px;
+  border: 2px solid #6B4F3A;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loc-btn:disabled { opacity: 0.45; cursor: default; }
+
+.loc-complete {
+  width: 100%;
+  background: #8A5A24;
+  border-color: #8A5A24;
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.loc-complete:disabled { background: #B9AFA3; border-color: #B9AFA3; color: #FBF7F0; opacity: 1; }
+
+.loc-puzzle { border: 0; margin: 0; padding: 0; min-width: 0; }
+.loc-puzzle:disabled { opacity: 0.6; }
+
+.loc-rest { align-items: center; justify-content: center; text-align: center; min-height: 60vh; }
+.loc-rest-panda svg { display: block; }
+.loc-rest-text { font-size: 18px; line-height: 1.6; }

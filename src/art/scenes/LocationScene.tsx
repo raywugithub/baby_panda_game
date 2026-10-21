@@ -7,9 +7,13 @@ import { WEATHER_OVERLAYS } from './weather';
 import { LANDMARK_ART } from '../landmarks';
 import { PAL } from '../items/primitives';
 
-/** 地標在場景中的錨點（底部中心）與大小。 */
-const LANDMARK_AT = { x: 180, y: 252 };
+/** 各地形的地面線（場景座標 y）：地標底部中心站在這條線上。 */
+const GROUND_Y: Record<Terrain, number> = { bamboo: 262, beach: 300, cloud: 318, snow: 330, mushroom: 300, starlake: 276 };
 const LANDMARK_SIZE = 150;
+
+function landmarkAt(terrain: Terrain): { x: number; y: number } {
+  return { x: 180, y: GROUND_Y[terrain] };
+}
 
 /** 場景鍵：生成地點為 `${terrain}-${layout}`；手工地點取其地形、版型 0。 */
 export function sceneKey(snap: LocationSnapshot): `${Terrain}-${0 | 1}` {
@@ -25,11 +29,12 @@ export function LocationArtwork({ snapshot }: { snapshot: LocationSnapshot }): J
   const Scene = TERRAIN_SCENES[sceneKey(snapshot)];
   const Landmark = LANDMARK_ART[snapshot.landmarkId];
   const Weather = WEATHER_OVERLAYS[snapshot.weather];
+  const at = landmarkAt(snapshot.terrain);
   return (
     <>
       <Scene />
       {Landmark && (
-        <g transform={`translate(${LANDMARK_AT.x} ${LANDMARK_AT.y})`}>
+        <g transform={`translate(${at.x} ${at.y})`}>
           <Landmark size={LANDMARK_SIZE} />
         </g>
       )}
@@ -140,11 +145,12 @@ export function SceneIllustration({ id }: { id: string }): JSX.Element | null {
   const Scene = TERRAIN_SCENES[`${terrain}-0` as keyof typeof TERRAIN_SCENES];
   if (!Scene) return null;
   const Landmark = landmarkId ? LANDMARK_ART[landmarkId] : undefined;
+  const at = landmarkAt(terrain as Terrain);
   return (
     <IllustrationFrame>
       <Scene />
       {Landmark && (
-        <g transform={`translate(${LANDMARK_AT.x} ${LANDMARK_AT.y})`}>
+        <g transform={`translate(${at.x} ${at.y})`}>
           <Landmark size={LANDMARK_SIZE} />
         </g>
       )}

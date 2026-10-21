@@ -38,4 +38,20 @@ describe('RewardToast', () => {
     await act(() => { eventQueue.value = [{ type: 'stageUp', stage: 2, title: '圓滾滾' }]; });
     expect(screen.getByText('升上階段 2：圓滾滾')).toBeTruthy();
   });
+
+  it('朋友升級顯示好感度提示；3／6／10 級另加解鎖專屬家具', async () => {
+    vi.useFakeTimers();
+    render(<RewardToast />);
+    await act(() => {
+      eventQueue.value = [
+        { type: 'friendLevelUp', friendId: 'mianhua', level: 2 },
+        { type: 'friendLevelUp', friendId: 'juzi', level: 3 },
+      ];
+    });
+    expect(visibleToasts()).toEqual(['棉花 好感度升到 Lv2！']);
+    act(() => { vi.advanceTimersByTime(2500); });
+    expect(visibleToasts()).toEqual(['橘子 好感度升到 Lv3！']);
+    act(() => { vi.advanceTimersByTime(2500); });
+    expect(visibleToasts()).toEqual(['解鎖專屬家具']);
+  });
 });

@@ -2,9 +2,12 @@ import { useEffect, useState } from 'preact/hooks';
 import { eventQueue } from '../store';
 import type { GameEvent } from '../../core/events';
 import { RECIPES } from '../../content/recipes';
+import { FRIENDS } from '../../content/friends';
 
 const SHOW_MS = 2500;
-const TOASTABLE = new Set<GameEvent['type']>(['reward', 'markUp', 'stageUp', 'slotUnlocked', 'recipeDiscovered', 'milestone']);
+const TOASTABLE = new Set<GameEvent['type']>(['reward', 'markUp', 'stageUp', 'slotUnlocked', 'recipeDiscovered', 'milestone', 'friendLevelUp']);
+/** 朋友升到這些等級時解鎖專屬家具（與 addAffinity 的發放等級一致）。 */
+const FURNITURE_LEVELS = new Set([3, 6, 10]);
 const CATEGORY_LABEL: Record<string, string> = { furniture: '家具', outfit: '衣服', pendant: '墜飾' };
 
 function isToastable(e: GameEvent): boolean {
@@ -34,6 +37,12 @@ function textsOf(e: GameEvent): string[] {
       return [`新食譜：${RECIPES.find((r) => r.id === e.recipeId)?.name ?? e.recipeId}`];
     case 'milestone':
       return [`圖鑑里程碑：${CATEGORY_LABEL[e.category] ?? e.category} ×${e.count}，送你一個禮盒！`];
+    case 'friendLevelUp': {
+      const name = FRIENDS.find((f) => f.id === e.friendId)?.name ?? e.friendId;
+      const out = [`${name} 好感度升到 Lv${e.level}！`];
+      if (FURNITURE_LEVELS.has(e.level)) out.push('解鎖專屬家具');
+      return out;
+    }
     default:
       return [];
   }

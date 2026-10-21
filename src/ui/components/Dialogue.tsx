@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { Panda } from '../../panda/Panda';
 import { currentStage } from '../../core/growth';
 import type { FriendId } from '../../core/state';
-import { resolveScript } from '../../content/story';
+import { resolveScript, type DialogueScript } from '../../content/story';
 import { game, dismissOverlay } from '../store';
 import { now } from '../../platform/clock';
 import { recordLegend } from './legendRecord';
@@ -18,13 +18,15 @@ const FRIEND_NAMES: Record<FriendId, string> = {
 
 export interface DialogueProps {
   scriptId: string;
+  /** 直接提供的腳本（例如地點的臨時對話）；未提供時依 scriptId 查詢。 */
+  script?: DialogueScript;
   onDone?: () => void;
 }
 
 /** 一次顯示一句；點擊對話框或「下一句」推進，最後一句再點擊呼叫 onDone。 */
-export function Dialogue({ scriptId, onDone }: DialogueProps) {
+export function Dialogue({ scriptId, script: given, onDone }: DialogueProps) {
   const s = game.value;
-  const script = resolveScript(scriptId, s.seed);
+  const script = given ?? resolveScript(scriptId, s.seed);
   const [index, setIndex] = useState(0);
 
   // 開啟小傳說時把它存成回憶照片的傳說卡（同 id 覆寫，重複開啟無妨）。
